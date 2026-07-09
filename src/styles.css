@@ -41,10 +41,15 @@
   /* Passport-specific tokens */
   --color-cream: var(--cream);
   --color-tan: var(--tan);
+  --color-tan-soft: var(--tan-soft);
   --color-teal: var(--teal);
   --color-teal-soft: var(--teal-soft);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-magenta: var(--magenta);
+  --color-magenta-soft: var(--magenta-soft);
+  --color-coral: var(--coral);
+  --color-coral-soft: var(--coral-soft);
   --color-terracotta: var(--terracotta);
   --color-navy: var(--navy);
   --color-sage: var(--sage);

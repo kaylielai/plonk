@@ -63,22 +63,25 @@
 :root {
   --radius: 0.875rem;
 
-  /* Passport palette */
-  --cream: oklch(0.972 0.012 85);         /* #FAF7F2 base */
-  --paper: oklch(0.985 0.008 85);          /* slightly lighter for cards */
-  --tan: oklch(0.905 0.028 80);            /* #E8E0D0 */
-  --tan-soft: oklch(0.945 0.018 82);
-  --teal: oklch(0.475 0.062 195);          /* #2D6A6A deep teal */
-  --teal-soft: oklch(0.92 0.028 195);
-  --gold: oklch(0.71 0.13 78);             /* #C9963A mustard */
-  --gold-soft: oklch(0.93 0.05 82);
-  --terracotta: oklch(0.62 0.13 40);
-  --navy: oklch(0.32 0.06 260);
+  /* Passport palette — Regal Navy / Beige / Magenta / Royal Gold / Coral */
+  --cream: oklch(0.945 0.022 100);         /* #EBEBD3 beige base */
+  --paper: oklch(0.975 0.014 100);          /* lighter beige for cards */
+  --tan: oklch(0.895 0.028 95);
+  --tan-soft: oklch(0.925 0.022 98);
+  --teal: oklch(0.335 0.11 258);            /* #083D77 regal navy — primary */
+  --teal-soft: oklch(0.88 0.04 258);
+  --gold: oklch(0.855 0.14 92);             /* #F4D35E royal gold */
+  --gold-soft: oklch(0.955 0.06 96);
+  --magenta: oklch(0.575 0.19 5);           /* #DA4167 magenta bloom */
+  --magenta-soft: oklch(0.92 0.05 5);
+  --coral: oklch(0.735 0.14 40);            /* #F78764 coral glow */
+  --coral-soft: oklch(0.93 0.05 40);
+  --terracotta: var(--coral);
+  --navy: var(--teal);
   --sage: oklch(0.65 0.06 150);
-  --ink: oklch(0.22 0.02 80);              /* warm near-black text */
-  --ink-muted: oklch(0.52 0.02 80);
+  --ink: oklch(0.19 0.04 258);              /* deep navy ink */
+  --ink-muted: oklch(0.48 0.03 258);
 
-  /* shadcn semantic mapping */
   --background: var(--cream);
   --foreground: var(--ink);
   --card: var(--paper);
@@ -86,17 +89,17 @@
   --popover: var(--paper);
   --popover-foreground: var(--ink);
   --primary: var(--teal);
-  --primary-foreground: oklch(0.985 0.008 85);
+  --primary-foreground: oklch(0.98 0.014 100);
   --secondary: var(--tan-soft);
   --secondary-foreground: var(--ink);
   --muted: var(--tan-soft);
   --muted-foreground: var(--ink-muted);
-  --accent: var(--gold);
-  --accent-foreground: oklch(0.985 0.008 85);
-  --destructive: oklch(0.55 0.18 25);
-  --destructive-foreground: oklch(0.985 0.008 85);
-  --border: oklch(0.88 0.02 82);
-  --input: oklch(0.88 0.02 82);
+  --accent: var(--magenta);
+  --accent-foreground: oklch(0.98 0.014 100);
+  --destructive: var(--magenta);
+  --destructive-foreground: oklch(0.98 0.014 100);
+  --border: oklch(0.85 0.025 90);
+  --input: oklch(0.85 0.025 90);
   --ring: var(--teal);
 }
 

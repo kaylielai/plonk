@@ -1,3 +1,4 @@
+import type * as React from "react";
 // Static SVG stamps per activity tag — vintage postage feel, single-color line art.
 // Placeholder until real generated art lands.
 
@@ -6,7 +7,7 @@ interface StampArtProps {
   className?: string;
 }
 
-const paths: Record<string, JSX.Element> = {
+const paths: Record<string, React.ReactNode> = {
   Food: (
     <g>
       <path d="M20 30h24l-2 26a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4z" />

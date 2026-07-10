@@ -2,15 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Bell } from "lucide-react";
 import { AppShell } from "@/components/passport/BottomNav";
 import { IdeaCard } from "@/components/passport/IdeaCard";
-import { seedGroups, seedIdeas } from "@/lib/seed";
+import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
+import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
+import { seedGroups, seedIdeas, type SeedIdea, type IdeaStatus } from "@/lib/seed";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Passport — a passport for your friendships" },
+      { title: "Plonk — a passport for your friendships" },
       { name: "description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
-      { property: "og:title", content: "Passport — a passport for your friendships" },
+      { property: "og:title", content: "Plonk — a passport for your friendships" },
       { property: "og:description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
     ],
   }),
@@ -19,12 +21,48 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const [filter, setFilter] = useState<string | null>(null);
-  const visible = filter ? seedIdeas.filter((i) => i.recipient === filter) : seedIdeas;
+  const [ideas, setIdeas] = useState<SeedIdea[]>(seedIdeas);
+  const [newIdeaOpen, setNewIdeaOpen] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<SeedIdea | null>(null);
+
+  const visible = filter ? ideas.filter((i) => i.recipient === filter) : ideas;
+
+  function handleNewIdea(idea: { title: string; timeframe: string; tag: string; recipient: string }) {
+    const newIdea: SeedIdea = {
+      id: `i${Date.now()}`,
+      title: idea.title,
+      timeframe: idea.timeframe,
+      tag: idea.tag,
+      recipient: idea.recipient,
+      status: "collecting-low" as IdeaStatus,
+      people: [
+        {
+          id: "u_me",
+          name: "You",
+          initials: "ME",
+          color: "bg-teal-soft text-teal",
+          responded: true,
+        },
+      ],
+    };
+    setIdeas((prev) => [newIdea, ...prev]);
+  }
+
+  function handleConfirm(ideaId: string) {
+    setIdeas((prev) =>
+      prev.map((i) =>
+        i.id === ideaId ? { ...i, status: "suggested" as IdeaStatus } : i
+      )
+    );
+    setSelectedIdea((prev) =>
+      prev?.id === ideaId ? { ...prev, status: "suggested" as IdeaStatus } : prev
+    );
+  }
 
   return (
     <AppShell>
       <header className="flex items-center justify-between px-5 pb-3 pt-6">
-        <h1 className="text-[26px] font-semibold tracking-tight text-foreground">
+        <h1 className="font-serif text-[26px] font-semibold tracking-tight text-foreground">
           Let&apos;s hang.
         </h1>
         <div className="flex items-center gap-2">
@@ -37,6 +75,7 @@ function HomePage() {
           </button>
           <button
             aria-label="New idea"
+            onClick={() => setNewIdeaOpen(true)}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)] active:scale-95"
           >
             <Plus className="h-5 w-5" />
@@ -82,10 +121,33 @@ function HomePage() {
       </div>
 
       <div className="flex flex-col gap-3 px-5 pb-6">
+        {visible.length === 0 && (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <span className="text-4xl">✦</span>
+            <p className="font-serif text-lg font-medium text-foreground">No ideas yet</p>
+            <p className="text-sm text-ink-muted">Tap + to drop something for this group</p>
+          </div>
+        )}
         {visible.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} />
+          <div key={idea.id} onClick={() => setSelectedIdea(idea)} className="cursor-pointer">
+            <IdeaCard idea={idea} />
+          </div>
         ))}
       </div>
+
+      {/* New idea sheet */}
+      <NewIdeaSheet
+        open={newIdeaOpen}
+        onClose={() => setNewIdeaOpen(false)}
+        onSubmit={handleNewIdea}
+      />
+
+      {/* Idea detail sheet */}
+      <IdeaDetailSheet
+        idea={selectedIdea}
+        onClose={() => setSelectedIdea(null)}
+        onConfirm={handleConfirm}
+      />
     </AppShell>
   );
 }

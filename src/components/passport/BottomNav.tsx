@@ -1,18 +1,19 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Users, BookOpen, User } from "lucide-react";
+import { Home, Users, Calendar, Stamp, User } from "lucide-react";
 
 const tabs = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/groups", label: "Groups", icon: Users },
-  { to: "/passport", label: "Passport", icon: BookOpen },
-  { to: "/profile", label: "Profile", icon: User },
+  { to: "/", label: "home", icon: Home },
+  { to: "/groups", label: "groups", icon: Users },
+  { to: "/calendar", label: "calendar", icon: Calendar },
+  { to: "/stamps", label: "stamps", icon: Stamp },
+  { to: "/profile", label: "profile", icon: User },
 ] as const;
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-[430px] items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+      <div className="mx-auto flex max-w-[430px] items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-2">
         {tabs.map((t) => {
           const active = pathname === t.to;
           const Icon = t.icon;

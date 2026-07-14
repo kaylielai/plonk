@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StampsRouteImport } from './routes/stamps'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PassportRouteImport } from './routes/passport'
 import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const StampsRoute = StampsRouteImport.update({
+  id: '/stamps',
+  path: '/stamps',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -29,6 +36,11 @@ const GroupsRoute = GroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,40 +49,63 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/groups': typeof GroupsRoute
   '/passport': typeof PassportRoute
   '/profile': typeof ProfileRoute
+  '/stamps': typeof StampsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/groups': typeof GroupsRoute
   '/passport': typeof PassportRoute
   '/profile': typeof ProfileRoute
+  '/stamps': typeof StampsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/groups': typeof GroupsRoute
   '/passport': typeof PassportRoute
   '/profile': typeof ProfileRoute
+  '/stamps': typeof StampsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/groups' | '/passport' | '/profile'
+  fullPaths:
+    '/' | '/calendar' | '/groups' | '/passport' | '/profile' | '/stamps'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/groups' | '/passport' | '/profile'
-  id: '__root__' | '/' | '/groups' | '/passport' | '/profile'
+  to: '/' | '/calendar' | '/groups' | '/passport' | '/profile' | '/stamps'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendar'
+    | '/groups'
+    | '/passport'
+    | '/profile'
+    | '/stamps'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarRoute: typeof CalendarRoute
   GroupsRoute: typeof GroupsRoute
   PassportRoute: typeof PassportRoute
   ProfileRoute: typeof ProfileRoute
+  StampsRoute: typeof StampsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stamps': {
+      id: '/stamps'
+      path: '/stamps'
+      fullPath: '/stamps'
+      preLoaderRoute: typeof StampsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -92,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,10 +146,22 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarRoute: CalendarRoute,
   GroupsRoute: GroupsRoute,
   PassportRoute: PassportRoute,
   ProfileRoute: ProfileRoute,
+  StampsRoute: StampsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

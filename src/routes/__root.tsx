@@ -77,10 +77,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Passport — a passport for your friendships" },
+      { title: "plonk — a keepsake for your friendships" },
       { name: "description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
-      { property: "og:title", content: "Passport" },
-      { property: "og:description", content: "A passport for your friendships." },
+      { property: "og:title", content: "plonk" },
+      { property: "og:description", content: "A keepsake for your friendships." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

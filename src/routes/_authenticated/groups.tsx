@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { listMyGroups, createGroup, getGroupDetail } from "@/lib/groups.functions";
 
 export const Route = createFileRoute("/_authenticated/groups")({
-  head: () => ({ meta: [{ title: "Groups — Passport" }] }),
+  head: () => ({ meta: [{ title: "Groups — plonk" }] }),
   component: GroupsPage,
 });
 

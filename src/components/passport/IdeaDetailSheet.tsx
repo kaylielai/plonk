@@ -397,7 +397,7 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
               {idea.status === "completed" && (
                 <div className="mt-4 rounded-2xl bg-teal-soft/40 p-4 ring-1 ring-teal/30 text-center">
                   <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal">✓ This happened</p>
-                  <p className="mt-1 text-sm text-ink-muted">Check your passport for the stamp.</p>
+                  <p className="mt-1 text-sm text-ink-muted">Check your plonk for the stamp.</p>
                 </div>
               )}
 

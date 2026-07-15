@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/i/$token")({
   head: ({ params }) => ({
     meta: [
-      { title: "You're invited on Passport" },
+      { title: "You're invited on plonk" },
       { name: "description", content: "A friend wants to hang out. Drop your availability — no account needed." },
     ],
   }),
@@ -71,7 +71,7 @@ function LiteInvitePage() {
             Thanks {name.split(" ")[0]}. Your availability was sent back to the group. They'll confirm a time in the app.
           </p>
           <div className="mt-8 rounded-2xl bg-paper p-5 ring-1 ring-border/50">
-            <p className="text-xs text-ink-muted uppercase tracking-[0.14em] mb-2">Want your own passport?</p>
+            <p className="text-xs text-ink-muted uppercase tracking-[0.14em] mb-2">Want your own plonk?</p>
             <p className="text-sm text-foreground">
               Every hangout you show up to earns a stamp. Get the app to start your own collection.
             </p>
@@ -79,7 +79,7 @@ function LiteInvitePage() {
               href="/auth"
               className="mt-4 inline-flex items-center rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground"
             >
-              Get Passport
+              Get plonk
             </a>
           </div>
         </div>

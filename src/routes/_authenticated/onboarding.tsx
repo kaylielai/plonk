@@ -7,7 +7,7 @@ import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Welcome — Passport" }] }),
+  head: () => ({ meta: [{ title: "Welcome — plonk" }] }),
   component: OnboardingPage,
 });
 
@@ -73,7 +73,7 @@ function OnboardingPage() {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-teal text-primary-foreground mb-4">
                 <span className="text-2xl">✦</span>
               </div>
-              <h1 className="text-[26px] font-semibold tracking-tight">Welcome to Passport.</h1>
+              <h1 className="text-[26px] font-semibold tracking-tight">Welcome to plonk.</h1>
               <p className="mt-2 text-sm text-ink-muted leading-relaxed">
                 A place to plan real hangouts with the people who matter — and collect a stamp for every one that actually happens.
               </p>
@@ -111,7 +111,7 @@ function OnboardingPage() {
         {step === 2 && (
           <>
             <p className="text-[11px] uppercase tracking-[0.14em] text-ink-muted mb-2">Step 2 of 2</p>
-            <h1 className="text-[24px] font-semibold tracking-tight">Pick your passport cover.</h1>
+            <h1 className="text-[24px] font-semibold tracking-tight">Pick your plonk cover.</h1>
             <p className="mt-2 text-sm text-ink-muted">
               Every hangout that actually happens becomes a stamp inside your book.
             </p>
@@ -136,7 +136,7 @@ function OnboardingPage() {
                       <path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18" />
                     </svg>
                   </div>
-                  <span className="text-[11px] tracking-[0.2em]">PASSPORT</span>
+                  <span className="text-[11px] tracking-[0.2em]">PLONK</span>
                   <span className="mt-1 text-[10px] tracking-[0.18em] opacity-70">{name || "your name"}</span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ function OnboardingPage() {
               disabled={saving}
               className="mt-10 w-full rounded-xl bg-primary py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
             >
-              {saving ? "…" : "Enter Passport"}
+              {saving ? "…" : "Enter plonk"}
             </button>
           </>
         )}

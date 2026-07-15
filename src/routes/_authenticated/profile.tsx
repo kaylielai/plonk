@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — Passport" }] }),
+  head: () => ({ meta: [{ title: "Profile — plonk" }] }),
   component: ProfilePage,
 });
 
@@ -70,12 +70,12 @@ function ProfilePage() {
           className="w-full rounded-xl border border-border bg-cream px-4 py-3 text-[15px]"
         />
 
-        <p className="mt-5 mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Passport cover</p>
+        <p className="mt-5 mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">plonk cover</p>
         <div className="flex justify-center">
           <div className="relative rounded-md shadow-[var(--shadow-stamp)]" style={{ width: 120, height: 165, backgroundColor: activeHex }}>
             <div className="absolute inset-3 rounded-sm border" style={{ borderColor: "rgba(255,255,255,0.25)" }} />
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/90">
-              <span className="text-[10px] tracking-[0.2em]">PASSPORT</span>
+              <span className="text-[10px] tracking-[0.2em]">PLONK</span>
               <span className="text-[9px] tracking-[0.18em] opacity-70">{name || "your name"}</span>
             </div>
           </div>

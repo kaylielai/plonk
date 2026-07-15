@@ -189,7 +189,9 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
                   {(idea.idea_participants ?? []).map((p) => {
                     const name = p.profiles?.display_name || p.lite_display_name || "?";
                     const id = p.user_id ?? p.id;
-                    const responded = (p.availability_responses ?? []).length > 0;
+                    const ar = p.availability_responses;
+                    const responded = Array.isArray(ar) ? ar.length > 0 : !!ar;
+
                     return (
                       <div key={p.id} className="flex items-center gap-3">
                         <span className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-semibold ${pickColor(id)}`}>

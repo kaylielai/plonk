@@ -4,7 +4,7 @@ import { seedGroups, seedIdeas, type SeedIdea } from "@/lib/seed";
 import { ChevronRight, Plus, ArrowLeft, MoreVertical, Check } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/groups")({
+export const Route = createFileRoute("/_authenticated/groups")({
   head: () => ({ meta: [{ title: "Groups — Plonk" }] }),
   component: GroupsPage,
 });

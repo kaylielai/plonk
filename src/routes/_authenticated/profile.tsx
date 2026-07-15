@@ -3,7 +3,7 @@ import { AppShell } from "@/components/passport/BottomNav";
 import { useState } from "react";
 import { Bell, Calendar, Lock, LogOut, ChevronRight, Check } from "lucide-react";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Passport" }] }),
   component: ProfilePage,
 });

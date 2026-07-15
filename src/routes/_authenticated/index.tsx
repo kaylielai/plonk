@@ -7,7 +7,7 @@ import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
 import { seedGroups, seedIdeas, type SeedIdea, type IdeaStatus } from "@/lib/seed";
 import { useState } from "react";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Plonk — a passport for your friendships" },

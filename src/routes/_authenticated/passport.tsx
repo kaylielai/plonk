@@ -4,7 +4,7 @@ import { StampArt } from "@/components/passport/StampArt";
 import { AvatarRow } from "@/components/passport/Avatar";
 import { Filter } from "lucide-react";
 
-export const Route = createFileRoute("/passport")({
+export const Route = createFileRoute("/_authenticated/passport")({
   head: () => ({
     meta: [
       { title: "Your Passport — Passport" },

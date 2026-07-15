@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { seedIdeas } from "@/lib/seed";
 import { useState } from "react";
 
-export const Route = createFileRoute("/calendar")({
+export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Plonk" }] }),
   component: CalendarPage,
 });

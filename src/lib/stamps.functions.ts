@@ -112,14 +112,8 @@ export const createStampsFromPhoto = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     // Mark idea as completed
-    const { data: hangout } = await supabaseAdmin
-      .from("hangouts")
-      .select("idea_id")
-      .eq("id", data.hangout_id)
-      .maybeSingle();
-    if (hangout) {
-      await supabaseAdmin.from("ideas").update({ status: "completed" }).eq("id", hangout.idea_id);
-    }
+    await supabaseAdmin.from("ideas").update({ status: "completed" }).eq("id", hangoutRow.idea_id);
+
 
     // Notify tagged attendees
     const notifs = data.tagged_user_ids

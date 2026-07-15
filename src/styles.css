@@ -70,10 +70,11 @@
   --radius: 0.875rem;
 
   /* Passport palette — Regal Navy / Beige / Magenta / Royal Gold / Coral */
-  --cream: oklch(0.945 0.022 100);         /* #EBEBD3 beige base */
-  --paper: oklch(0.975 0.014 100);          /* lighter beige for cards */
-  --tan: oklch(0.895 0.028 95);
-  --tan-soft: oklch(0.925 0.022 98);
+  --cream: oklch(1 0 0);                    /* white base */
+  --paper: oklch(1 0 0);                    /* white cards */
+  --tan: oklch(0.96 0.003 258);
+  --tan-soft: oklch(0.975 0.002 258);
+
   --teal: oklch(0.335 0.11 258);            /* #083D77 regal navy — primary */
   --teal-soft: oklch(0.88 0.04 258);
   --gold: oklch(0.855 0.14 92);             /* #F4D35E royal gold */

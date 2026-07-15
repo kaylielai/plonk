@@ -77,12 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "plonk — a keepsake for your friendships" },
+      { title: "plonk" },
       { name: "description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
       { property: "og:title", content: "plonk" },
-      { property: "og:description", content: "A keepsake for your friendships." },
+      { property: "og:description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "plonk" },
+      { name: "twitter:description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/55bdbce2-1625-46e9-9b60-ac43a8c54e36/id-preview-034c3a2a--b432a152-3711-47a3-a803-32d50621e28d.lovable.app-1784078261996.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/55bdbce2-1625-46e9-9b60-ac43a8c54e36/id-preview-034c3a2a--b432a152-3711-47a3-a803-32d50621e28d.lovable.app-1784078261996.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

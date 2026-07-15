@@ -5,7 +5,7 @@ import { Home, Users, Stamp, User } from "lucide-react";
 const tabs = [
   { to: "/", label: "home", icon: Home },
   { to: "/groups", label: "groups", icon: Users },
-  { to: "/passport", label: "passport", icon: Stamp },
+  { to: "/passport", label: "plonk", icon: Stamp },
   { to: "/profile", label: "profile", icon: User },
 ] as const;
 

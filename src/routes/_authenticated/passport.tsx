@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/passport")({
   head: () => ({
     meta: [
-      { title: "Your Passport" },
+      { title: "Your plonk" },
       { name: "description", content: "A keepsake of every hangout that actually happened." },
     ],
   }),
@@ -40,7 +40,7 @@ function PassportPage() {
     <AppShell>
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 px-5 pt-8 pb-4">
         <div className="min-w-0">
-          <h1 className="text-[28px] font-semibold tracking-tight">Passport</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight">plonk</h1>
           <p className="mt-0.5 text-sm text-ink-muted">
             {stamps.length} {stamps.length === 1 ? "hangout" : "hangouts"} stamped
           </p>
@@ -193,7 +193,7 @@ function CoverSpread({ coverName }: { coverName?: string }) {
           <div className="mt-2 grid h-14 w-14 place-items-center rounded-full ring-2 ring-gold/70">
             <span className="text-2xl">✦</span>
           </div>
-          <h2 className="mt-3 text-[15px] font-semibold uppercase tracking-[0.22em]">Passport</h2>
+          <h2 className="mt-3 text-[15px] font-semibold uppercase tracking-[0.22em]">plonk</h2>
           <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-navy/60">of friendships</p>
         </div>
       </PageSurface>
@@ -208,7 +208,7 @@ function CoverSpread({ coverName }: { coverName?: string }) {
           <div className="space-y-1.5">
             <FieldLine label="Issued" value={new Date().toLocaleDateString([], { month: "short", year: "numeric" })} />
             <FieldLine label="Type" value="Personal — Friendships" />
-            <FieldLine label="Code" value="PSPT" />
+            <FieldLine label="Code" value="PLNK" />
           </div>
         </div>
       </PageSurface>

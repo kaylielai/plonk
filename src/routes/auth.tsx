@@ -7,8 +7,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Passport" },
-      { name: "description", content: "Sign in to your Passport account." },
+      { title: "Sign in — plonk" },
+      { name: "description", content: "Sign in to your plonk account." },
     ],
   }),
   component: AuthPage,
@@ -73,7 +73,7 @@ function AuthPage() {
               <path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18" />
             </svg>
           </div>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground">Passport</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground">plonk</h1>
           <p className="mt-1 text-sm text-ink-muted">a passport for your friendships</p>
         </div>
 

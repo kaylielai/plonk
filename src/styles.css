@@ -86,8 +86,9 @@
   --terracotta: var(--coral);
   --navy: var(--teal);
   --sage: oklch(0.65 0.06 150);
-  --ink: oklch(0.19 0.04 258);              /* deep navy ink */
-  --ink-muted: oklch(0.48 0.03 258);
+  --ink: oklch(0.18 0.01 258);              /* near-black modern neutral */
+  --ink-muted: oklch(0.55 0.01 258);
+
 
   --background: var(--cream);
   --foreground: var(--ink);

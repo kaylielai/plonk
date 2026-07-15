@@ -50,6 +50,40 @@ export const createStampsFromPhoto = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    // ---- Authorization: caller must be a participant of the hangout's idea,
+    // and every tagged user must also be a participant of that idea. ----
+    const { data: hangoutRow, error: hangoutErr } = await context.supabase
+      .from("hangouts")
+      .select("id, idea_id")
+      .eq("id", data.hangout_id)
+      .maybeSingle();
+    if (hangoutErr) throw new Error(hangoutErr.message);
+    if (!hangoutRow) throw new Error("Hangout not found or access denied");
+
+    // Caller must be a real participant (not just able to see the idea).
+    const { data: callerPart, error: callerErr } = await context.supabase
+      .from("idea_participants")
+      .select("user_id")
+      .eq("idea_id", hangoutRow.idea_id)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (callerErr) throw new Error(callerErr.message);
+    if (!callerPart) throw new Error("Only participants can create stamps for this hangout");
+
+    // Every tagged user must be a participant of the same idea.
+    const { data: participantRows, error: partsErr } = await context.supabase
+      .from("idea_participants")
+      .select("user_id")
+      .eq("idea_id", hangoutRow.idea_id);
+    if (partsErr) throw new Error(partsErr.message);
+    const participantIds = new Set(
+      (participantRows ?? []).map((r) => r.user_id).filter((u): u is string => !!u),
+    );
+    const invalid = data.tagged_user_ids.filter((uid) => !participantIds.has(uid));
+    if (invalid.length > 0) {
+      throw new Error("One or more tagged users are not participants of this hangout");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Try to generate art via Lovable AI (best-effort)
@@ -78,14 +112,8 @@ export const createStampsFromPhoto = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     // Mark idea as completed
-    const { data: hangout } = await supabaseAdmin
-      .from("hangouts")
-      .select("idea_id")
-      .eq("id", data.hangout_id)
-      .maybeSingle();
-    if (hangout) {
-      await supabaseAdmin.from("ideas").update({ status: "completed" }).eq("id", hangout.idea_id);
-    }
+    await supabaseAdmin.from("ideas").update({ status: "completed" }).eq("id", hangoutRow.idea_id);
+
 
     // Notify tagged attendees
     const notifs = data.tagged_user_ids

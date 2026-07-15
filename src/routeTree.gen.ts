@@ -17,7 +17,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPassportRouteImport } from './routes/_authenticated/passport'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
-import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedJoinTokenRouteImport } from './routes/_authenticated/join.$token'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -58,76 +58,76 @@ const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
+const AuthenticatedJoinTokenRoute = AuthenticatedJoinTokenRouteImport.update({
+  id: '/join/$token',
+  path: '/join/$token',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
-  '/calendar': typeof AuthenticatedCalendarRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/passport': typeof AuthenticatedPassportRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/i/$token': typeof ITokenRoute
+  '/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
-  '/calendar': typeof AuthenticatedCalendarRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/passport': typeof AuthenticatedPassportRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/i/$token': typeof ITokenRoute
   '/': typeof AuthenticatedIndexRoute
+  '/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/passport': typeof AuthenticatedPassportRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/i/$token': typeof ITokenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/calendar'
     | '/groups'
     | '/onboarding'
     | '/passport'
     | '/profile'
     | '/i/$token'
+    | '/join/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/calendar'
     | '/groups'
     | '/onboarding'
     | '/passport'
     | '/profile'
     | '/i/$token'
     | '/'
+    | '/join/$token'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/calendar'
     | '/_authenticated/groups'
     | '/_authenticated/onboarding'
     | '/_authenticated/passport'
     | '/_authenticated/profile'
     | '/i/$token'
     | '/_authenticated/'
+    | '/_authenticated/join/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -194,32 +194,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/calendar': {
-      id: '/_authenticated/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+    '/_authenticated/join/$token': {
+      id: '/_authenticated/join/$token'
+      path: '/join/$token'
+      fullPath: '/join/$token'
+      preLoaderRoute: typeof AuthenticatedJoinTokenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPassportRoute: typeof AuthenticatedPassportRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedJoinTokenRoute: typeof AuthenticatedJoinTokenRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPassportRoute: AuthenticatedPassportRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedJoinTokenRoute: AuthenticatedJoinTokenRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

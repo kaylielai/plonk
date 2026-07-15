@@ -17,7 +17,7 @@ import { listMyNotifications } from "@/lib/notifications.functions";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "plonk — a passport for your friendships" },
+      { title: "plonk — a keepsake for your friendships" },
       { name: "description", content: "Turn vague hangout plans into real ones. Collect a stamp for every hangout that actually happens." },
     ],
   }),

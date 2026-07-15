@@ -86,6 +86,13 @@ export type Database = {
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "group_members_profile_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       groups: {
@@ -176,6 +183,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ideas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "idea_participants_profile_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -362,6 +376,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "hangouts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stamps_owner_profile_fk"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }

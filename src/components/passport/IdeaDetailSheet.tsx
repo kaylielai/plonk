@@ -49,8 +49,11 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   useEffect(() => {
     if (!data) return;
     const myPart = data.idea.idea_participants?.find((p) => p.user_id === data.myUserId);
-    const mySlots = myPart?.availability_responses?.[0]?.slots as typeof slots | undefined;
+    const rawResp = myPart?.availability_responses;
+    const respObj = Array.isArray(rawResp) ? rawResp[0] : rawResp;
+    const mySlots = respObj?.slots as typeof slots | undefined;
     if (mySlots) setSlots(mySlots);
+
     // default tagged: all app-user participants
     setTaggedIds(
       (data.idea.idea_participants ?? [])

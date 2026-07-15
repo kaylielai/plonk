@@ -1,216 +1,418 @@
-import { useState } from "react";
-import { X, Check, ArrowRight } from "lucide-react";
-import type { SeedIdea } from "@/lib/seed";
-import { StampArt } from "./StampArt";
-import { AvatarRow } from "./Avatar";
+import { useState, useEffect } from "react";
+import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken } from "@/lib/ideas.functions";
+import { createStampsFromPhoto } from "@/lib/stamps.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { initials, pickColor } from "./IdeaCard";
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface IdeaDetailSheetProps {
-  idea: SeedIdea | null;
+  ideaId: string | null;
   onClose: () => void;
-  onConfirm?: (ideaId: string) => void;
 }
 
-export function IdeaDetailSheet({ idea, onClose, onConfirm }: IdeaDetailSheetProps) {
-  const [confirmed, setConfirmed] = useState(false);
-  const [showCalendarToast, setShowCalendarToast] = useState(false);
+export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
+  const qc = useQueryClient();
+  const detailFn = useServerFn(getIdeaDetail);
+  const availFn = useServerFn(submitAvailability);
+  const suggestFn = useServerFn(suggestTime);
+  const confirmFn = useServerFn(confirmIdea);
+  const liteFn = useServerFn(createLiteToken);
+  const stampsFn = useServerFn(createStampsFromPhoto);
 
-  if (!idea) return null;
+  const { data, isLoading } = useQuery({
+    queryKey: ["idea", ideaId],
+    queryFn: () => detailFn({ data: { idea_id: ideaId! } }),
+    enabled: !!ideaId,
+  });
 
-  const responded = idea.people.filter((p) => p.responded).length;
-  const pct = Math.round((responded / idea.people.length) * 100);
-  const isSuggested = idea.status === "suggested";
-  const isCompleted = idea.status === "completed";
+  const [slots, setSlots] = useState<{ mornings: string[]; afternoons: string[]; evenings: string[] }>({
+    mornings: [], afternoons: [], evenings: [],
+  });
+  const [suggestDay, setSuggestDay] = useState("");
+  const [suggestT, setSuggestT] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmDate, setConfirmDate] = useState("");
+  const [showPhoto, setShowPhoto] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [taggedIds, setTaggedIds] = useState<string[]>([]);
+  const [caption, setCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [liteToken, setLiteToken] = useState<string | null>(null);
 
-  function handleConfirm() {
-    setConfirmed(true);
-    onConfirm?.(idea!.id);
-    setTimeout(() => {
-      setShowCalendarToast(true);
-    }, 600);
+  // Prefill my existing slots when data loads
+  useEffect(() => {
+    if (!data) return;
+    const myPart = data.idea.idea_participants?.find((p) => p.user_id === data.myUserId);
+    const rawResp = myPart?.availability_responses;
+    const respObj = Array.isArray(rawResp) ? rawResp[0] : rawResp;
+    const mySlots = respObj?.slots as typeof slots | undefined;
+    if (mySlots) setSlots(mySlots);
+
+    // default tagged: all app-user participants
+    setTaggedIds(
+      (data.idea.idea_participants ?? [])
+        .filter((p) => p.user_id)
+        .map((p) => p.user_id!) ?? [],
+    );
+  }, [data]);
+
+  if (!ideaId) return null;
+
+  const idea = data?.idea;
+  const hangout = data?.hangout;
+  const myUserId = data?.myUserId;
+
+  function toggle(band: keyof typeof slots, day: string) {
+    setSlots((s) => ({
+      ...s,
+      [band]: s[band].includes(day) ? s[band].filter((d) => d !== day) : [...s[band], day],
+    }));
+  }
+
+  const submitMut = useMutation({
+    mutationFn: () => availFn({ data: { idea_id: ideaId, slots } }),
+    onSuccess: () => {
+      toast.success("Sent!");
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  const suggestMut = useMutation({
+    mutationFn: () => suggestFn({ data: { idea_id: ideaId, suggested_day: suggestDay, suggested_time: suggestT } }),
+    onSuccess: () => {
+      toast.success("Time suggested");
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  const confirmMut = useMutation({
+    mutationFn: () => confirmFn({ data: { idea_id: ideaId, confirmed_time: new Date(confirmDate).toISOString() } }),
+    onSuccess: () => {
+      toast.success("Plan confirmed ✨");
+      setShowConfirm(false);
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  async function handleLite() {
+    try {
+      const { token } = await liteFn({ data: { idea_id: ideaId } });
+      const url = `${window.location.origin}/i/${encodeURIComponent(token)}`;
+      setLiteToken(url);
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  }
+
+  async function handlePhotoUpload() {
+    if (!photoFile || !hangout || taggedIds.length === 0) return;
+    setUploading(true);
+    try {
+      const ext = photoFile.name.split(".").pop() || "jpg";
+      const path = `${hangout.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("hangout-photos")
+        .upload(path, photoFile, { contentType: photoFile.type });
+      if (upErr) throw upErr;
+
+      await stampsFn({
+        data: {
+          hangout_id: hangout.id,
+          photo_path: path,
+          tagged_user_ids: taggedIds,
+          caption: caption || undefined,
+          tag: idea!.tag,
+          title: idea!.title,
+        },
+      });
+      toast.success("Stamped! ✦");
+      setShowPhoto(false);
+      setPhotoFile(null);
+      setCaption("");
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["stamps"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
     <>
-      {/* backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* sheet */}
+      <div className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-paper shadow-[0_-8px_40px_rgba(0,0,0,0.14)]">
-        {/* drag handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-border" />
         </div>
-
-        {/* close button */}
         <div className="flex justify-end px-5 pt-2">
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-ink-muted"
-          >
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-ink-muted">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 pb-10" style={{ maxHeight: "78vh" }}>
-          {/* tag + recipient */}
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center rounded-sm bg-ink px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-paper">
-              {idea.tag}
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
-              {idea.recipient}
-            </span>
-          </div>
-
-          {/* title */}
-          <h2 className="mt-3 font-serif text-[26px] font-semibold leading-tight text-foreground">
-            {idea.title}
-          </h2>
-
-          {/* timeframe */}
-          <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe}</p>
-
-          {/* stamp art (small) */}
-          <div className="mt-5 flex justify-center">
-            <div
-              className="relative flex h-28 w-28 items-center justify-center rounded-md bg-cream p-2"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 4px 4px, transparent 3px, var(--color-cream) 3.5px)",
-                backgroundSize: "8px 8px",
-                backgroundPosition: "-4px -4px",
-              }}
-            >
-              <div className="flex h-full w-full flex-col items-center justify-center rounded-sm border border-gold/40 bg-gold-soft/50 p-1 text-gold">
-                <StampArt tag={idea.tag} className="h-14 w-14" />
-                <span className="mt-0.5 text-[8px] font-semibold uppercase tracking-wider">
+        <div className="overflow-y-auto px-5 pb-10" style={{ maxHeight: "82vh" }}>
+          {isLoading || !idea ? (
+            <div className="py-10 text-center text-sm text-ink-muted">Loading…</div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center rounded-sm bg-ink px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-paper">
                   {idea.tag}
                 </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                  {idea.groups?.name ?? "1:1"}
+                </span>
               </div>
-            </div>
-          </div>
+              <h2 className="mt-3 text-[24px] font-semibold leading-tight">{idea.title}</h2>
+              <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe_label}</p>
 
-          {/* who's free */}
-          <div className="mt-6">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
-              Who's in
-            </p>
-            <div className="flex flex-col gap-2.5">
-              {idea.people.map((p) => (
-                <div key={p.id} className="flex items-center gap-3">
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-semibold ${p.color}`}
+              {/* Participants */}
+              <div className="mt-6">
+                <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Who's in</p>
+                <div className="flex flex-col gap-2.5">
+                  {(idea.idea_participants ?? []).map((p) => {
+                    const name = p.profiles?.display_name || p.lite_display_name || "?";
+                    const id = p.user_id ?? p.id;
+                    const ar = p.availability_responses;
+                    const responded = Array.isArray(ar) ? ar.length > 0 : !!ar;
+
+                    return (
+                      <div key={p.id} className="flex items-center gap-3">
+                        <span className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-semibold ${pickColor(id)}`}>
+                          {initials(name)}
+                        </span>
+                        <span className="flex-1 text-sm font-medium">{name}</span>
+                        {responded ? (
+                          <span className="flex items-center gap-1 rounded-full bg-teal-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-teal">
+                            <Check className="h-3 w-3" /> In
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-secondary px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Availability picker (collecting state) */}
+              {(idea.status === "collecting" || idea.status === "suggested") && (
+                <div className="mt-6 rounded-2xl bg-cream p-4 ring-1 ring-border/50">
+                  <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Your availability</p>
+                  {(["mornings", "afternoons", "evenings"] as const).map((band) => (
+                    <div key={band} className="mb-3">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {band === "mornings" && <Sunrise className="h-3.5 w-3.5 text-gold" />}
+                        {band === "afternoons" && <Sun className="h-3.5 w-3.5 text-coral" />}
+                        {band === "evenings" && <Moon className="h-3.5 w-3.5 text-teal" />}
+                        <span className="text-xs font-medium capitalize">{band}</span>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {DAYS.map((d) => {
+                          const active = slots[band].includes(d);
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => toggle(band, d)}
+                              className={`rounded-md py-1.5 text-[10px] font-medium ${
+                                active ? "bg-teal text-primary-foreground" : "bg-paper text-ink-muted"
+                              }`}
+                            >
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => submitMut.mutate()}
+                    disabled={submitMut.isPending}
+                    className="mt-2 w-full rounded-lg bg-primary py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
                   >
-                    {p.initials}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-foreground">
-                    {p.name}
-                  </span>
-                  {p.responded ? (
-                    <span className="flex items-center gap-1 rounded-full bg-teal-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-teal">
-                      <Check className="h-3 w-3" /> Free
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-secondary px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                      Pending
-                    </span>
-                  )}
+                    {submitMut.isPending ? "…" : "Save my availability"}
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* availability meter */}
-            {!isCompleted && (
-              <div className="mt-4">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-tan-soft">
-                  <div
-                    className="h-full rounded-full bg-teal transition-all"
-                    style={{ width: `${pct}%` }}
+              {/* Suggest time (collecting → suggested) */}
+              {idea.status === "collecting" && (
+                <div className="mt-4 rounded-2xl bg-paper p-4 ring-1 ring-border/50">
+                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                    Have a specific time in mind?
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Day (Thu)"
+                      value={suggestDay}
+                      onChange={(e) => setSuggestDay(e.target.value)}
+                      className="flex-1 rounded-lg border border-border bg-cream px-3 py-2 text-sm"
+                    />
+                    <input
+                      placeholder="Time (7pm)"
+                      value={suggestT}
+                      onChange={(e) => setSuggestT(e.target.value)}
+                      className="flex-1 rounded-lg border border-border bg-cream px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <button
+                    onClick={() => suggestMut.mutate()}
+                    disabled={!suggestDay || !suggestT || suggestMut.isPending}
+                    className="mt-3 w-full rounded-lg border border-teal/40 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-teal disabled:opacity-50"
+                  >
+                    Propose this time
+                  </button>
+                </div>
+              )}
+
+              {/* Suggested block */}
+              {idea.status === "suggested" && (
+                <div className="mt-4 rounded-2xl bg-gold-soft/50 p-4 ring-1 ring-gold/30">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">✦ Suggested</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {idea.suggested_day} · {idea.suggested_time}
+                  </p>
+                  <button
+                    onClick={() => setShowConfirm(true)}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground"
+                  >
+                    Confirm time <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Confirm form */}
+              {showConfirm && (
+                <div className="mt-3 rounded-2xl bg-cream p-4 ring-1 ring-border/50">
+                  <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                    Lock in a date + time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={confirmDate}
+                    onChange={(e) => setConfirmDate(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-paper px-3 py-2.5 text-sm"
                   />
+                  <button
+                    onClick={() => confirmMut.mutate()}
+                    disabled={!confirmDate || confirmMut.isPending}
+                    className="mt-3 w-full rounded-lg bg-primary py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+                  >
+                    {confirmMut.isPending ? "…" : "Lock it in"}
+                  </button>
                 </div>
-                <p className="mt-1.5 text-right font-mono text-[10px] text-ink-muted">
-                  {responded} of {idea.people.length} responded
-                </p>
-              </div>
-            )}
-          </div>
+              )}
 
-          {/* suggested time block */}
-          {isSuggested && !confirmed && (
-            <div className="mt-6 rounded-2xl bg-gold-soft/40 p-4 ring-1 ring-gold/30">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">
-                ✦ Suggested time
-              </p>
-              <p className="mt-1 font-serif text-2xl font-semibold text-foreground">
-                {idea.suggestedTime}
-              </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                Based on who's free — confirm to lock it in for everyone.
-              </p>
-            </div>
-          )}
+              {/* Confirmed → add photo */}
+              {idea.status === "confirmed" && hangout && (
+                <div className="mt-4 rounded-2xl bg-teal-soft/50 p-4 ring-1 ring-teal/30">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal">✓ Confirmed</p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {new Date(hangout.confirmed_time).toLocaleString([], {
+                      weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                    })}
+                  </p>
+                  <button
+                    onClick={() => setShowPhoto(true)}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground"
+                  >
+                    <Camera className="h-4 w-4" /> Upload photo → stamp
+                  </button>
+                </div>
+              )}
 
-          {/* confirmed state */}
-          {confirmed && (
-            <div className="mt-6 rounded-2xl bg-teal-soft/40 p-4 ring-1 ring-teal/30">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal">
-                ✓ Plan confirmed
-              </p>
-              <p className="mt-1 font-serif text-2xl font-semibold text-foreground">
-                {idea.suggestedTime}
-              </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                Everyone in the thread has been notified.
-              </p>
-            </div>
-          )}
+              {/* Photo upload UI */}
+              {showPhoto && idea.status === "confirmed" && (
+                <div className="mt-3 rounded-2xl bg-cream p-4 ring-1 ring-border/50">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+                    className="w-full text-xs"
+                  />
+                  <p className="mt-3 mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                    Who was actually there? (tap to include)
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(idea.idea_participants ?? [])
+                      .filter((p) => p.user_id)
+                      .map((p) => {
+                        const name = p.profiles?.display_name || "?";
+                        const uid = p.user_id!;
+                        const active = taggedIds.includes(uid);
+                        return (
+                          <button
+                            key={uid}
+                            onClick={() =>
+                              setTaggedIds((ids) =>
+                                ids.includes(uid) ? ids.filter((i) => i !== uid) : [...ids, uid],
+                              )
+                            }
+                            className={`rounded-full px-3 py-1.5 text-[11px] ${
+                              active ? "bg-teal text-primary-foreground" : "bg-paper text-ink-muted"
+                            }`}
+                          >
+                            {name}
+                            {uid === myUserId ? " (you)" : ""}
+                          </button>
+                        );
+                      })}
+                  </div>
+                  <textarea
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    placeholder="a line about this hangout (optional)"
+                    className="mt-3 w-full rounded-lg border border-border bg-paper px-3 py-2 text-sm"
+                    rows={2}
+                  />
+                  <button
+                    onClick={handlePhotoUpload}
+                    disabled={!photoFile || uploading || taggedIds.length === 0}
+                    className="mt-3 w-full rounded-lg bg-primary py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+                  >
+                    {uploading ? "generating stamp…" : "Mint stamps ✦"}
+                  </button>
+                </div>
+              )}
 
-          {/* completed state */}
-          {isCompleted && (
-            <div className="mt-6 rounded-2xl bg-teal-soft/40 p-4 ring-1 ring-teal/30">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal">
-                ✓ This happened
-              </p>
-              <p className="mt-1 font-serif text-xl font-semibold text-foreground">
-                {idea.happenedOn}
-              </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                Stamp added to your passport.
-              </p>
-            </div>
-          )}
+              {/* Completed */}
+              {idea.status === "completed" && (
+                <div className="mt-4 rounded-2xl bg-teal-soft/40 p-4 ring-1 ring-teal/30 text-center">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-teal">✓ This happened</p>
+                  <p className="mt-1 text-sm text-ink-muted">Check your passport for the stamp.</p>
+                </div>
+              )}
 
-          {/* CTA buttons */}
-          <div className="mt-6 flex flex-col gap-3">
-            {isSuggested && !confirmed && (
-              <>
+              {/* Lite link */}
+              {idea.status !== "completed" && (
                 <button
-                  onClick={handleConfirm}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-primary-foreground active:scale-[0.99]"
+                  onClick={handleLite}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
                 >
-                  Confirm time <ArrowRight className="h-3.5 w-3.5" />
+                  {liteToken ? <Copy className="h-3.5 w-3.5" /> : <LinkIcon className="h-3.5 w-3.5" />}
+                  {liteToken ? "Link copied ✓" : "Share with a non-user (lite link)"}
                 </button>
-                <button className="w-full rounded-xl border border-border py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-                  Suggest different time
-                </button>
-              </>
-            )}
-
-            {confirmed && showCalendarToast && (
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-teal/40 bg-teal-soft/30 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-teal">
-                Add to calendar (coming soon)
-              </button>
-            )}
-
-            {!isSuggested && !isCompleted && (
-              <button className="w-full rounded-xl border border-border/60 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted/60">
-                Not happening
-              </button>
-            )}
-          </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </>

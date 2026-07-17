@@ -31,7 +31,16 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      display_name?: string;
+      username?: string | null;
+      passport_cover_color?: string;
+      avatar_url?: string | null;
+      onboarded_at?: string;
+      schedule_view?: "week" | "month";
+      weekly_schedule?: Record<string, ("morning" | "afternoon" | "evening")[]>;
+      monthly_schedule?: Record<string, ("morning" | "afternoon" | "evening")[]>;
+    } = {};
     if (data.display_name !== undefined) patch.display_name = data.display_name;
     if (data.username !== undefined) patch.username = data.username;
     if (data.passport_cover_color !== undefined) patch.passport_cover_color = data.passport_cover_color;

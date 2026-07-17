@@ -147,11 +147,6 @@ function HomePage() {
         groups={groups.map((g) => ({ id: g.id, name: g.name, cover_color: g.cover_color }))}
         onSubmit={handleNewIdea}
       />
-
-      <IdeaDetailSheet
-        ideaId={selectedId}
-        onClose={() => setSelectedId(null)}
-      />
     </AppShell>
   );
 }

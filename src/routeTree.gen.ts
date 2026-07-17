@@ -23,6 +23,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedJoinTokenRouteImport } from './routes/_authenticated/join.$token'
+import { Route as AuthenticatedIdeasIdeaIdRouteImport } from './routes/_authenticated/ideas.$ideaId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -97,6 +98,12 @@ const AuthenticatedJoinTokenRoute = AuthenticatedJoinTokenRouteImport.update({
   path: '/join/$token',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedIdeasIdeaIdRoute =
+  AuthenticatedIdeasIdeaIdRouteImport.update({
+    id: '/ideas/$ideaId',
+    path: '/ideas/$ideaId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/i/$token': typeof ITokenRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/ideas/$ideaId': typeof AuthenticatedIdeasIdeaIdRoute
   '/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/ideas/$ideaId': typeof AuthenticatedIdeasIdeaIdRoute
   '/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRoutesById {
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/ideas/$ideaId': typeof AuthenticatedIdeasIdeaIdRoute
   '/_authenticated/join/$token': typeof AuthenticatedJoinTokenRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/i/$token'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/ideas/$ideaId'
     | '/join/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/ideas/$ideaId'
     | '/join/$token'
   id:
     | '__root__'
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/ideas/$ideaId'
     | '/_authenticated/join/$token'
   fileRoutesById: FileRoutesById
 }
@@ -329,6 +342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJoinTokenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ideas/$ideaId': {
+      id: '/_authenticated/ideas/$ideaId'
+      path: '/ideas/$ideaId'
+      fullPath: '/ideas/$ideaId'
+      preLoaderRoute: typeof AuthenticatedIdeasIdeaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -353,6 +373,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPassportRoute: typeof AuthenticatedPassportRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedIdeasIdeaIdRoute: typeof AuthenticatedIdeasIdeaIdRoute
   AuthenticatedJoinTokenRoute: typeof AuthenticatedJoinTokenRoute
 }
 
@@ -363,6 +384,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPassportRoute: AuthenticatedPassportRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedIdeasIdeaIdRoute: AuthenticatedIdeasIdeaIdRoute,
   AuthenticatedJoinTokenRoute: AuthenticatedJoinTokenRoute,
 }
 

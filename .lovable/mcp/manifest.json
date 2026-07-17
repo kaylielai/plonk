@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://rpcjupqryuyjrcyjzluu.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "plonk-mcp",
+      "version": "0.1.0",
+      "title": "plonk"
+    },
+    "tools": [
+      {
+        "name": "list_my_feed",
+        "title": "List my hangout feed",
+        "description": "List the signed-in user's plonk ideas (hangouts being planned or confirmed) across all their groups.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Max ideas to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_idea",
+        "title": "Create hangout idea",
+        "description": "Float a new plonk hangout idea to one of the signed-in user's groups or a 1:1 recipient. Must include either group_id or recipient_user_id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "Short idea title, e.g. 'coffee at Blue Bottle'."
+            },
+            "timeframe_label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "description": "Loose timeframe, e.g. 'this weekend', 'next week'."
+            },
+            "tag": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "description": "Vibe tag, e.g. 'coffee', 'dinner', 'walk'."
+            },
+            "group_id": {
+              "description": "Target group ID (mutually exclusive with recipient_user_id).",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "recipient_user_id": {
+              "description": "Target user ID for a 1:1 (mutually exclusive with group_id).",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": [
+            "title",
+            "timeframe_label",
+            "tag"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_groups",
+        "title": "List my groups",
+        "description": "List the plonk friend groups the signed-in user belongs to (id, name, cover color).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_stamps",
+        "title": "List my passport stamps",
+        "description": "List the signed-in user's collected plonk stamps (title, tag, caption, date).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

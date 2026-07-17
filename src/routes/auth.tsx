@@ -1,10 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — plonk" },
@@ -14,8 +17,15 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+// Only allow same-origin relative paths as post-auth redirect targets.
+function safeNext(next: string): string {
+  if (!next.startsWith("/") || next.startsWith("//")) return "/";
+  return next;
+}
+
 function AuthPage() {
-  const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const target = safeNext(next);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,9 +33,9 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) window.location.replace(target);
     });
-  }, [navigate]);
+  }, [target]);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -35,14 +45,14 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: window.location.origin + target },
         });
         if (error) throw error;
         toast.success("Check your email to confirm your account (or just sign in).");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/" });
+        window.location.replace(target);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -53,15 +63,16 @@ function AuthPage() {
 
   async function handleGoogle() {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.origin + target,
     });
     if (result.error) {
       toast.error(result.error.message ?? "Google sign-in failed");
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/" });
+    window.location.replace(target);
   }
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">

@@ -127,10 +127,16 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const detailFn = useServerFn(getGroupDetail);
   const addByUsernameFn = useServerFn(addGroupMemberByUsername);
   const renameFn = useServerFn(renameGroup);
+  const ideasFn = useServerFn(listGroupIdeas);
+  const createIdeaFn = useServerFn(createIdea);
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["group", groupId],
     queryFn: () => detailFn({ data: { group_id: groupId } }),
+  });
+  const { data: ideas = [] } = useQuery({
+    queryKey: ["group-ideas", groupId],
+    queryFn: () => ideasFn({ data: { group_id: groupId } }),
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const [sheet, setSheet] = useState<null | "members" | "add" | "rename">(null);
@@ -138,6 +144,53 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [newIdeaOpen, setNewIdeaOpen] = useState(false);
+  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
+
+  const groupedByDay = useMemo(() => {
+    const groups = new Map<string, DisplayIdea[]>();
+    for (const i of ideas) {
+      const participants = i.idea_participants ?? [];
+      const responseCount = (i.availability_responses ?? []).length;
+      const dayLabel = (i.confirmed_time
+        ? new Date(i.confirmed_time).toLocaleDateString([], { weekday: "long" })
+        : i.suggested_day || i.timeframe_label || "Someday").toUpperCase();
+      const display: DisplayIdea = {
+        id: i.id,
+        title: i.title,
+        tag: i.tag,
+        timeframe: i.timeframe_label,
+        recipient: i.groups?.name ?? "",
+        status: i.status,
+        participantCount: Math.max(participants.length, 1),
+        respondedCount: responseCount,
+        suggestedLabel: i.suggested_day && i.suggested_time ? `${i.suggested_day} · ${i.suggested_time}` : undefined,
+        confirmedTime: i.confirmed_time
+          ? new Date(i.confirmed_time).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })
+          : undefined,
+        people: participants.map((p) => ({
+          initials: initials(p.profiles?.display_name || p.lite_display_name || "?"),
+          color: pickColor(p.user_id ?? p.id),
+          responded: false,
+        })),
+      };
+      if (!groups.has(dayLabel)) groups.set(dayLabel, []);
+      groups.get(dayLabel)!.push(display);
+    }
+    return Array.from(groups.entries());
+  }, [ideas]);
+
+  async function handleDropIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string }) {
+    try {
+      await createIdeaFn({ data: input });
+      toast.success("Idea dropped");
+      qc.invalidateQueries({ queryKey: ["group-ideas", groupId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  }
+
 
 
   async function copyInvite() {

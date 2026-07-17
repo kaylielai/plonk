@@ -385,7 +385,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
             className="w-full rounded-xl border border-border bg-cream px-3 py-2.5 text-sm focus:outline-none"
             onKeyDown={(e) => { if (e.key === "Enter") submitRename(); }}
           />
-          <p className="mt-2 text-[11px] text-ink-muted">Only the group creator can rename this group.</p>
+          <p className="mt-2 text-[11px] text-ink-muted">Any member can rename this group.</p>
           <button
             onClick={submitRename}
             disabled={renaming || !newName.trim() || newName.trim() === data?.group.name}

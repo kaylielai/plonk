@@ -32,6 +32,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
   const [customTag, setCustomTag] = useState("");
   const [showCustomTag, setShowCustomTag] = useState(false);
   const [groupId, setGroupId] = useState(defaultGroupId ?? "");
+  const [targetDate, setTargetDate] = useState("");
   const [saving, setSaving] = useState(false);
 
   const effectiveTimeframe = timeframe === "custom" ? customTimeframe : timeframe;
@@ -47,6 +48,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
         timeframe_label: effectiveTimeframe.trim(),
         tag: effectiveTag,
         group_id: groupId,
+        target_date: targetDate || null,
       });
       setTitle("");
       setTimeframe("");
@@ -55,6 +57,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
       setCustomTag("");
       setShowCustomTag(false);
       setGroupId("");
+      setTargetDate("");
       onClose();
     } finally {
       setSaving(false);

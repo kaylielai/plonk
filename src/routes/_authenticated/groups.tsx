@@ -325,7 +325,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         onSubmit={handleDropIdea}
       />
 
-      <IdeaDetailSheet ideaId={selectedIdeaId} onClose={() => setSelectedIdeaId(null)} />
+      
 
 
 

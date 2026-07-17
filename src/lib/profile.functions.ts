@@ -80,3 +80,16 @@ export const checkUsernameAvailable = createServerFn({ method: "POST" })
     const taken = (rows ?? []).some((r) => r.user_id !== context.userId);
     return { available: !taken, reason: taken ? "Already taken" : "" };
   });
+
+export const deleteMyAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ confirm: z.literal("DELETE") }).parse(d))
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Cascades via FKs on auth.users where configured; explicit profile cleanup as belt-and-braces.
+    await supabaseAdmin.from("profiles").delete().eq("user_id", context.userId);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+

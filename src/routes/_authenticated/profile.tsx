@@ -108,9 +108,17 @@ function ProfilePage() {
 
   return (
     <AppShell>
-      <header className="px-5 pb-2 pt-8">
+      <header className="flex items-center justify-between px-5 pb-2 pt-8">
         <h1 className="text-[26px] font-semibold tracking-tight">Profile</h1>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Settings"
+          className="rounded-full p-2 text-ink-muted hover:bg-secondary hover:text-foreground transition"
+        >
+          <SettingsIcon className="h-5 w-5" />
+        </button>
       </header>
+
 
       <section className="mx-5 mt-4 rounded-3xl bg-paper p-5 ring-1 ring-border/40">
         <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Display name</label>

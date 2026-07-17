@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Users, Stamp, User } from "lucide-react";
+import { Home, Users, Stamp, User, Calendar } from "lucide-react";
 
 
 const tabs = [
   { to: "/", label: "home", icon: Home },
   { to: "/groups", label: "groups", icon: Users },
-  { to: "/passport", label: "plonk", icon: Stamp },
+  { to: "/calendar", label: "calendar", icon: Calendar },
+  { to: "/passport", label: "stamps", icon: Stamp },
   { to: "/profile", label: "profile", icon: User },
 ] as const;
 
@@ -22,11 +23,11 @@ export function BottomNav() {
             <Link
               key={t.to}
               to={t.to}
-              className={`flex flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition-colors ${
-                active ? "text-teal" : "text-ink-muted"
+              className={`group flex flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition-all duration-200 hover:bg-teal-soft/40 active:scale-95 ${
+                active ? "text-teal" : "text-ink-muted hover:text-teal"
               }`}
             >
-              <Icon className={`h-5 w-5 ${active ? "stroke-[2.4]" : ""}`} />
+              <Icon className={`h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5 ${active ? "stroke-[2.4]" : ""}`} />
               {t.label}
             </Link>
           );

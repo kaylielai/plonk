@@ -65,6 +65,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        applyStayPref(stayIn);
         window.location.replace(target);
       }
     } catch (err) {
@@ -75,6 +76,7 @@ function AuthPage() {
   }
 
   async function handleGoogle() {
+    applyStayPref(stayIn);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + target,
     });

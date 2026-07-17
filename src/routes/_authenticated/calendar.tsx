@@ -140,9 +140,10 @@ function CalendarPage() {
           {upcoming.map((i) => {
             const d = new Date(i.confirmed_time!);
             return (
-              <div
+              <button
                 key={i.id}
-                className="flex items-center gap-4 rounded-2xl bg-paper p-3 ring-1 ring-border/40 hover:ring-teal/40 transition"
+                onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: i.id } })}
+                className="flex w-full items-center gap-4 rounded-2xl bg-paper p-3 text-left ring-1 ring-border/40 hover:ring-teal/40 transition"
               >
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-teal-soft text-teal">
                   <div className="text-center leading-tight">

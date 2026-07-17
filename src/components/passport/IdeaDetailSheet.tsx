@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy } from "lucide-react";
+import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken } from "@/lib/ideas.functions";
 import { createStampsFromPhoto } from "@/lib/stamps.functions";
+import { addHangoutToGoogleCalendar, isGoogleCalendarConnected } from "@/lib/googleCalendar.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { initials, pickColor } from "./IdeaCard";
 
@@ -24,6 +25,23 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   const confirmFn = useServerFn(confirmIdea);
   const liteFn = useServerFn(createLiteToken);
   const stampsFn = useServerFn(createStampsFromPhoto);
+  const addToGcalFn = useServerFn(addHangoutToGoogleCalendar);
+  const gcalStatusFn = useServerFn(isGoogleCalendarConnected);
+  const { data: gcalStatus } = useQuery({
+    queryKey: ["gcal-connected"],
+    queryFn: () => gcalStatusFn(),
+  });
+  const addToGcalMut = useMutation({
+    mutationFn: () => addToGcalFn({ data: { idea_id: ideaId! } }),
+    onSuccess: (res) => {
+      toast.success("Added to Google Calendar", {
+        action: res.htmlLink
+          ? { label: "Open", onClick: () => window.open(res.htmlLink!, "_blank") }
+          : undefined,
+      });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["idea", ideaId],
@@ -351,6 +369,20 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
                     className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground"
                   >
                     <Camera className="h-4 w-4" /> Upload photo → stamp
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!gcalStatus?.connected) {
+                        toast.error("Connect Google Calendar in Profile first.");
+                        return;
+                      }
+                      addToGcalMut.mutate();
+                    }}
+                    disabled={addToGcalMut.isPending}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-teal/40 bg-paper py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-teal disabled:opacity-50"
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    {addToGcalMut.isPending ? "Adding…" : "Add to Google Calendar"}
                   </button>
                 </div>
               )}

@@ -41,7 +41,6 @@ function HomePage() {
 
   const [filter, setFilter] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Redirect to onboarding if not complete
   useEffect(() => {

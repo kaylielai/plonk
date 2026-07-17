@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { Plus, ArrowLeft, Copy, Search, MoreVertical, UserPlus, Users, X, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";

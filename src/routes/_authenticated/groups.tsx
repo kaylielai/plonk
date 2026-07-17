@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { Plus, ArrowLeft, Copy, Search, MoreVertical, UserPlus, Users, X, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -9,7 +9,7 @@ import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername, re
 import { listGroupIdeas, createIdea } from "@/lib/ideas.functions";
 import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
 import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
-import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
+
 
 
 export const Route = createFileRoute("/_authenticated/groups")({
@@ -145,7 +145,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const [newName, setNewName] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [newIdeaOpen, setNewIdeaOpen] = useState(false);
-  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const groupedByDay = useMemo(() => {
     const groups = new Map<string, DisplayIdea[]>();
@@ -302,7 +302,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
                 {day}
               </div>
               {list.map((idea) => (
-                <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedIdeaId(idea.id)} />
+                <IdeaCard key={idea.id} idea={idea} onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: idea.id } })} />
               ))}
             </section>
           ))
@@ -325,7 +325,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         onSubmit={handleDropIdea}
       />
 
-      <IdeaDetailSheet ideaId={selectedIdeaId} onClose={() => setSelectedIdeaId(null)} />
+      
 
 
 

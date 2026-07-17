@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/passport/BottomNav";
 import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
 import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
-import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
+
 import { listMyFeed, createIdea } from "@/lib/ideas.functions";
 import { listMyGroups } from "@/lib/groups.functions";
 import { getMyProfile } from "@/lib/profile.functions";
@@ -41,7 +41,6 @@ function HomePage() {
 
   const [filter, setFilter] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Redirect to onboarding if not complete
   useEffect(() => {
@@ -138,7 +137,7 @@ function HomePage() {
           </div>
         )}
         {visible.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedId(idea.id)} />
+          <IdeaCard key={idea.id} idea={idea} onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: idea.id } })} />
         ))}
       </div>
 
@@ -147,11 +146,6 @@ function HomePage() {
         onClose={() => setNewOpen(false)}
         groups={groups.map((g) => ({ id: g.id, name: g.name, cover_color: g.cover_color }))}
         onSubmit={handleNewIdea}
-      />
-
-      <IdeaDetailSheet
-        ideaId={selectedId}
-        onClose={() => setSelectedId(null)}
       />
     </AppShell>
   );

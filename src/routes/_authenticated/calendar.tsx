@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 });
 
 function CalendarPage() {
+  const navigate = useNavigate();
   const feedFn = useServerFn(listMyFeed);
   const { data: feed = [] } = useQuery({ queryKey: ["feed"], queryFn: () => feedFn() });
 
@@ -139,9 +140,10 @@ function CalendarPage() {
           {upcoming.map((i) => {
             const d = new Date(i.confirmed_time!);
             return (
-              <div
+              <button
                 key={i.id}
-                className="flex items-center gap-4 rounded-2xl bg-paper p-3 ring-1 ring-border/40 hover:ring-teal/40 transition"
+                onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: i.id } })}
+                className="flex w-full items-center gap-4 rounded-2xl bg-paper p-3 text-left ring-1 ring-border/40 hover:ring-teal/40 transition"
               >
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-teal-soft text-teal">
                   <div className="text-center leading-tight">
@@ -160,7 +162,7 @@ function CalendarPage() {
                 <span className="rounded-full bg-gold-soft px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-navy">
                   {i.tag}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>

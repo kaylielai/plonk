@@ -29,7 +29,20 @@ function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [stayIn, setStayIn] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  function applyStayPref(stay: boolean) {
+    try {
+      if (stay) {
+        localStorage.setItem("plonk-stay-signed-in", "1");
+        sessionStorage.removeItem("plonk-session-only");
+      } else {
+        localStorage.removeItem("plonk-stay-signed-in");
+        sessionStorage.setItem("plonk-session-only", "1");
+      }
+    } catch {}
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

@@ -170,8 +170,14 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
         </div>
 
         <div className="overflow-y-auto px-5 pb-10" style={{ maxHeight: "82vh" }}>
-          {isLoading || !idea ? (
+          {isLoading ? (
             <div className="py-10 text-center text-sm text-ink-muted">Loading…</div>
+          ) : error || !idea ? (
+            <div className="py-10 text-center">
+              <p className="text-sm font-medium text-foreground">Couldn't load this idea</p>
+              <p className="mt-1 text-xs text-ink-muted">{error instanceof Error ? error.message : "It may have been removed or you no longer have access."}</p>
+              <button onClick={onClose} className="mt-4 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">Close</button>
+            </div>
           ) : (
             <>
               <div className="flex items-center justify-between">

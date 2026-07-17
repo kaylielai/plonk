@@ -172,6 +172,8 @@ function ProfilePage() {
         Save changes
       </button>
 
+      <AdvancedSecurity onSignedOut={signOut} />
+
       <button
         onClick={signOut}
         className="mx-5 mt-3 mb-4 flex w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-xl border border-destructive/40 py-3 text-sm text-destructive"
@@ -181,6 +183,118 @@ function ProfilePage() {
     </AppShell>
   );
 }
+
+function AdvancedSecurity({ onSignedOut }: { onSignedOut: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState("");
+  const [delLoading, setDelLoading] = useState(false);
+  const deleteFn = useServerFn(deleteMyAccount);
+
+  async function changePassword() {
+    if (pw.length < 6) return toast.error("Password must be at least 6 characters.");
+    setPwLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setPwLoading(false);
+    if (error) return toast.error(error.message);
+    setPw("");
+    toast.success("Password updated");
+  }
+
+  async function sendReset() {
+    const { data } = await supabase.auth.getUser();
+    const email = data.user?.email;
+    if (!email) return toast.error("No email on account.");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password",
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Reset link sent to " + email);
+  }
+
+  async function deleteAccount() {
+    if (confirmDelete !== "DELETE") return toast.error('Type "DELETE" to confirm.');
+    setDelLoading(true);
+    try {
+      await deleteFn({ data: { confirm: "DELETE" } });
+      toast.success("Account deleted");
+      await onSignedOut();
+    } catch (err) {
+      setDelLoading(false);
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    }
+  }
+
+  return (
+    <section className="mx-5 mt-5 rounded-3xl bg-paper ring-1 ring-border/40">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-5 py-4 text-left"
+      >
+        <span className="flex items-center gap-2 text-[14px] font-semibold">
+          <ShieldAlert className="h-4 w-4 text-destructive" /> Advanced security options
+        </span>
+        <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="border-t border-border/40 px-5 py-5 space-y-6">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Change password</p>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="password"
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                placeholder="new password"
+                minLength={6}
+                className="flex-1 rounded-xl border border-border bg-cream px-4 py-2.5 text-sm"
+              />
+              <button
+                onClick={changePassword}
+                disabled={pwLoading}
+                className="rounded-xl bg-primary px-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-50"
+              >
+                Update
+              </button>
+            </div>
+            <button onClick={sendReset} className="mt-2 text-xs text-ink-muted underline hover:text-foreground">
+              Email me a reset link instead
+            </button>
+          </div>
+
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Forgot your username?</p>
+            <p className="mt-1 text-xs text-ink-muted">
+              Your @username is shown at the top of this Profile tab. Edit it any time in the Username field above.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-destructive/40 p-4">
+            <p className="text-[13px] font-semibold text-destructive">Delete account</p>
+            <p className="mt-1 text-xs text-ink-muted">
+              Permanently removes your profile, stamps, groups, and sign-in. This cannot be undone.
+            </p>
+            <input
+              value={confirmDelete}
+              onChange={(e) => setConfirmDelete(e.target.value)}
+              placeholder='Type "DELETE" to confirm'
+              className="mt-3 w-full rounded-xl border border-border bg-cream px-4 py-2.5 text-sm"
+            />
+            <button
+              onClick={deleteAccount}
+              disabled={delLoading || confirmDelete !== "DELETE"}
+              className="mt-2 w-full rounded-xl bg-destructive py-2.5 text-xs font-semibold uppercase tracking-wider text-destructive-foreground disabled:opacity-40"
+            >
+              {delLoading ? "Deleting…" : "Delete my account forever"}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 
 function ScheduleSection({
   view,

@@ -122,6 +122,21 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => {
+      try {
+        if (sessionStorage.getItem("plonk-session-only") === "1") {
+          void import("@/integrations/supabase/client").then(({ supabase }) =>
+            supabase.auth.signOut({ scope: "local" }),
+          );
+        }
+      } catch {}
+    };
+    window.addEventListener("pagehide", handler);
+    return () => window.removeEventListener("pagehide", handler);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

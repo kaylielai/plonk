@@ -29,7 +29,20 @@ function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [stayIn, setStayIn] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  function applyStayPref(stay: boolean) {
+    try {
+      if (stay) {
+        localStorage.setItem("plonk-stay-signed-in", "1");
+        sessionStorage.removeItem("plonk-session-only");
+      } else {
+        localStorage.removeItem("plonk-stay-signed-in");
+        sessionStorage.setItem("plonk-session-only", "1");
+      }
+    } catch {}
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -52,6 +65,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        applyStayPref(stayIn);
         window.location.replace(target);
       }
     } catch (err) {
@@ -62,6 +76,7 @@ function AuthPage() {
   }
 
   async function handleGoogle() {
+    applyStayPref(stayIn);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + target,
     });
@@ -123,6 +138,15 @@ function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded-xl border border-border bg-paper px-4 py-3 text-[15px] focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
           />
+          <label className="flex items-center gap-2 pt-1 text-xs text-ink-muted select-none cursor-pointer">
+            <input
+              type="checkbox"
+              checked={stayIn}
+              onChange={(e) => setStayIn(e.target.checked)}
+              className="h-4 w-4 rounded border-border text-teal focus:ring-teal accent-teal"
+            />
+            Stay signed in on this device
+          </label>
           <button
             type="submit"
             disabled={loading}

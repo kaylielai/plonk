@@ -122,7 +122,7 @@ export const renameGroup = createServerFn({ method: "POST" })
       .select()
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!row) throw new Error("Only the group creator can rename this group");
+    if (!row) throw new Error("You must be a member of this group to rename it");
     return row;
   });
 

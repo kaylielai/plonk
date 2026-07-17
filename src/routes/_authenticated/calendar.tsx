@@ -162,7 +162,7 @@ function CalendarPage() {
                 <span className="rounded-full bg-gold-soft px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-navy">
                   {i.tag}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>

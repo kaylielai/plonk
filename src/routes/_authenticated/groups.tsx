@@ -122,15 +122,19 @@ function GroupsPage() {
 function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void }) {
   const detailFn = useServerFn(getGroupDetail);
   const addByUsernameFn = useServerFn(addGroupMemberByUsername);
+  const renameFn = useServerFn(renameGroup);
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["group", groupId],
     queryFn: () => detailFn({ data: { group_id: groupId } }),
   });
   const [menuOpen, setMenuOpen] = useState(false);
-  const [sheet, setSheet] = useState<null | "members" | "add">(null);
+  const [sheet, setSheet] = useState<null | "members" | "add" | "rename">(null);
   const [username, setUsername] = useState("");
   const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [renaming, setRenaming] = useState(false);
+
 
   async function copyInvite() {
     if (!data) return;

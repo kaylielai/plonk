@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
+import { GoogleCalendarSection } from "@/components/passport/GoogleCalendarSection";
 import { useState, useEffect, useMemo } from "react";
 import { LogOut, Check, ChevronDown, ShieldAlert, Settings as SettingsIcon, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -174,6 +175,8 @@ function ProfilePage() {
         monthly={monthly}
         toggleSlot={toggleSlot}
       />
+
+      <GoogleCalendarSection />
 
       <button
         onClick={save}

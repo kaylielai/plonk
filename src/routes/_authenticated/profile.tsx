@@ -61,6 +61,8 @@ function ProfilePage() {
   }, [profile]);
 
   const usernameValid = !username || /^[A-Za-z0-9_]{3,20}$/.test(username);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
 
   async function save() {
     if (!usernameValid) {

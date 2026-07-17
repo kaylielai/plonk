@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
-import { Plus, ArrowLeft, Copy } from "lucide-react";
-import { useState } from "react";
+import { Plus, ArrowLeft, Copy, Search, MoreVertical, UserPlus, Users, X } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { listMyGroups, createGroup, getGroupDetail } from "@/lib/groups.functions";
+import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername } from "@/lib/groups.functions";
 
 export const Route = createFileRoute("/_authenticated/groups")({
   head: () => ({ meta: [{ title: "Groups — plonk" }] }),
@@ -20,6 +20,12 @@ function GroupsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(
+    () => groups.filter((g) => g.name.toLowerCase().includes(search.trim().toLowerCase())),
+    [groups, search],
+  );
 
   if (selectedId) return <GroupDetail groupId={selectedId} onBack={() => setSelectedId(null)} />;
 
@@ -48,6 +54,27 @@ function GroupsPage() {
         </button>
       </header>
 
+      <div className="px-5 pb-4">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search groups"
+            className="w-full rounded-xl border border-border bg-paper py-2.5 pl-9 pr-9 text-sm focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-ink-muted hover:bg-secondary"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {creating && (
         <div className="mx-5 mb-4 rounded-2xl bg-paper p-4 ring-1 ring-border/50">
           <input
@@ -65,14 +92,16 @@ function GroupsPage() {
       )}
 
       <div className="flex flex-col gap-0 px-5">
-        {groups.length === 0 && !creating && (
+        {filtered.length === 0 && !creating && (
           <div className="flex flex-col items-center gap-2 py-16 text-center">
             <span className="text-3xl">✦</span>
-            <p className="text-lg font-medium">No groups yet</p>
-            <p className="text-sm text-ink-muted">Create a group, then invite friends.</p>
+            <p className="text-lg font-medium">{search ? "No matches" : "No groups yet"}</p>
+            <p className="text-sm text-ink-muted">
+              {search ? "Try a different search." : "Create a group, then invite friends."}
+            </p>
           </div>
         )}
-        {groups.map((g) => (
+        {filtered.map((g) => (
           <button
             key={g.id}
             onClick={() => setSelectedId(g.id)}
@@ -91,16 +120,39 @@ function GroupsPage() {
 
 function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void }) {
   const detailFn = useServerFn(getGroupDetail);
+  const addByUsernameFn = useServerFn(addGroupMemberByUsername);
+  const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["group", groupId],
     queryFn: () => detailFn({ data: { group_id: groupId } }),
   });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [sheet, setSheet] = useState<null | "members" | "add">(null);
+  const [username, setUsername] = useState("");
+  const [adding, setAdding] = useState(false);
 
   async function copyInvite() {
     if (!data) return;
     const url = `${window.location.origin}/join/${encodeURIComponent(data.group.invite_token)}`;
     await navigator.clipboard.writeText(url);
     toast.success("Invite link copied");
+    setMenuOpen(false);
+  }
+
+  async function addByUsername() {
+    if (!username.trim()) return;
+    setAdding(true);
+    try {
+      const added = await addByUsernameFn({ data: { group_id: groupId, username: username.trim() } });
+      toast.success(`Added ${added?.display_name || username}`);
+      setUsername("");
+      setSheet(null);
+      qc.invalidateQueries({ queryKey: ["group", groupId] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAdding(false);
+    }
   }
 
   return (
@@ -110,29 +162,118 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-soft text-teal text-sm font-semibold">
           {data?.group.name.slice(0, 2).toUpperCase()}
         </span>
-        <span className="text-[20px] font-semibold">{data?.group.name}</span>
+        <span className="flex-1 text-[20px] font-semibold">{data?.group.name}</span>
+
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-secondary"
+            aria-label="More"
+          >
+            <MoreVertical className="h-5 w-5" />
+          </button>
+          {menuOpen && (
+            <>
+              <button
+                className="fixed inset-0 z-10 cursor-default"
+                onClick={() => setMenuOpen(false)}
+                aria-hidden
+              />
+              <div className="absolute right-0 top-11 z-20 w-56 overflow-hidden rounded-xl border border-border bg-paper shadow-lg">
+                <button
+                  onClick={() => { setSheet("members"); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-secondary"
+                >
+                  <Users className="h-4 w-4 text-ink-muted" /> View members
+                </button>
+                <button
+                  onClick={() => { setSheet("add"); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-secondary"
+                >
+                  <UserPlus className="h-4 w-4 text-ink-muted" /> Add by username
+                </button>
+                <button
+                  onClick={copyInvite}
+                  className="flex w-full items-center gap-3 border-t border-border px-4 py-3 text-left text-sm hover:bg-secondary"
+                >
+                  <Copy className="h-4 w-4 text-ink-muted" /> Copy invite link
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </header>
 
-      <div className="px-5">
-        <button
-          onClick={copyInvite}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
-        >
-          <Copy className="h-3.5 w-3.5" /> Copy invite link
-        </button>
+      {sheet === "members" && (
+        <SheetOverlay title={`Members · ${data?.members.length ?? 0}`} onClose={() => setSheet(null)}>
+          <div className="flex flex-col gap-2">
+            {(data?.members ?? []).map((m) => (
+              <div key={m.user_id} className="flex items-center gap-3 rounded-xl bg-paper p-3 ring-1 ring-border/40">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-tan text-[12px] font-semibold text-ink">
+                  {(m.profiles?.display_name || "?").slice(0, 2).toUpperCase()}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{m.profiles?.display_name || "Anonymous"}</span>
+                  {m.profiles?.username && (
+                    <span className="text-xs text-ink-muted">@{m.profiles.username}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </SheetOverlay>
+      )}
 
-        <p className="mt-6 mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">Members</p>
-        <div className="flex flex-col gap-2">
-          {(data?.members ?? []).map((m) => (
-            <div key={m.user_id} className="flex items-center gap-3 rounded-xl bg-paper p-3 ring-1 ring-border/40">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tan text-[12px] font-semibold text-ink">
-                {(m.profiles?.display_name || "?").slice(0, 2).toUpperCase()}
-              </span>
-              <span className="text-sm">{m.profiles?.display_name || "Anonymous"}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {sheet === "add" && (
+        <SheetOverlay title="Add by username" onClose={() => setSheet(null)}>
+          <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Username</label>
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-cream px-3 py-2.5">
+            <span className="text-sm text-ink-muted">@</span>
+            <input
+              autoFocus
+              value={username}
+              onChange={(e) => setUsername(e.target.value.replace(/[^A-Za-z0-9_]/g, ""))}
+              placeholder="username"
+              maxLength={20}
+              className="flex-1 bg-transparent text-sm focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={addByUsername}
+            disabled={adding || !username.trim()}
+            className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+          >
+            {adding ? "Adding…" : "Add to group"}
+          </button>
+        </SheetOverlay>
+      )}
     </AppShell>
+  );
+}
+
+function SheetOverlay({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-t-3xl bg-background p-5 pb-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold">{title}</h2>
+          <button onClick={onClose} className="rounded-full p-1 hover:bg-secondary" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
   );
 }

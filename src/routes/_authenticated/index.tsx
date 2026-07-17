@@ -53,7 +53,7 @@ function HomePage() {
   const visible = filter ? displayIdeas.filter((i) => i.recipient === filter) : displayIdeas;
   const unread = notifs.filter((n) => !n.read_at).length;
 
-  async function handleNewIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string }) {
+  async function handleNewIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string; target_date: string | null }) {
     try {
       await createFn({ data: input });
       toast.success("Idea dropped");

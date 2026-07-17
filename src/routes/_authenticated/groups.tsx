@@ -198,6 +198,12 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
                   <UserPlus className="h-4 w-4 text-ink-muted" /> Add by username
                 </button>
                 <button
+                  onClick={() => { setNewName(data?.group.name ?? ""); setSheet("rename"); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-secondary"
+                >
+                  <Pencil className="h-4 w-4 text-ink-muted" /> Rename group
+                </button>
+                <button
                   onClick={copyInvite}
                   className="flex w-full items-center gap-3 border-t border-border px-4 py-3 text-left text-sm hover:bg-secondary"
                 >

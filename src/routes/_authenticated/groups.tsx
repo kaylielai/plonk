@@ -145,7 +145,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const [newName, setNewName] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [newIdeaOpen, setNewIdeaOpen] = useState(false);
-  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const groupedByDay = useMemo(() => {
     const groups = new Map<string, DisplayIdea[]>();

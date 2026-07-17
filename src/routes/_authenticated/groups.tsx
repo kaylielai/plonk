@@ -261,9 +261,9 @@ function SheetOverlay({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-t-3xl bg-background p-5 pb-8"
+        className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-3xl bg-background p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

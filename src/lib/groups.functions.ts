@@ -84,7 +84,24 @@ export const getGroupDetail = createServerFn({ method: "POST" })
     if (error || !group) throw new Error("Group not found");
     const { data: members } = await context.supabase
       .from("group_members")
-      .select("user_id, joined_at, profiles(user_id, display_name, avatar_url)")
+      .select("user_id, joined_at, profiles(user_id, display_name, username, avatar_url)")
       .eq("group_id", data.group_id);
     return { group, members: members ?? [] };
+  });
+
+export const addGroupMemberByUsername = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      group_id: z.string().uuid(),
+      username: z.string().regex(/^[A-Za-z0-9_]{3,20}$/, "3-20 letters, numbers, or underscores"),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc("add_group_member_by_username", {
+      _group_id: data.group_id,
+      _username: data.username,
+    });
+    if (error) throw new Error(error.message);
+    return rows?.[0] ?? null;
   });

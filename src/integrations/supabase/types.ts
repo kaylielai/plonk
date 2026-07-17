@@ -313,28 +313,40 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string
+          monthly_schedule: Json
           onboarded_at: string | null
           passport_cover_color: string
+          schedule_view: string
           updated_at: string
           user_id: string
+          username: string | null
+          weekly_schedule: Json
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string
+          monthly_schedule?: Json
           onboarded_at?: string | null
           passport_cover_color?: string
+          schedule_view?: string
           updated_at?: string
           user_id: string
+          username?: string | null
+          weekly_schedule?: Json
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string
+          monthly_schedule?: Json
           onboarded_at?: string | null
           passport_cover_color?: string
+          schedule_view?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
+          weekly_schedule?: Json
         }
         Relationships: []
       }
@@ -409,6 +421,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_group_member_by_username: {
+        Args: { _group_id: string; _username: string }
+        Returns: {
+          display_name: string
+          user_id: string
+          username: string
+        }[]
+      }
       lite_idea_summary: {
         Args: { _token: string }
         Returns: {

@@ -29,6 +29,7 @@ function OnboardingPage() {
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [cover, setCover] = useState("navy");
   const [saving, setSaving] = useState(false);
 
@@ -38,18 +39,22 @@ function OnboardingPage() {
         navigate({ to: "/" });
       } else {
         setName(profile.display_name || "");
+        setUsername(profile.username || "");
         setCover(profile.passport_cover_color || "navy");
       }
     }
   }, [profile, navigate]);
 
+  const usernameValid = /^[A-Za-z0-9_]{3,20}$/.test(username);
+
   async function finish() {
-    if (!name.trim()) return;
+    if (!name.trim() || !usernameValid) return;
     setSaving(true);
     try {
       await updateProfile({
         data: {
           display_name: name.trim(),
+          username,
           passport_cover_color: cover,
           complete_onboarding: true,
         },
@@ -98,15 +103,32 @@ function OnboardingPage() {
               placeholder="your name"
               className="mt-6 w-full rounded-xl border border-border bg-paper px-4 py-3 text-[17px] focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
             />
+
+            <label className="mt-6 block text-[11px] uppercase tracking-[0.14em] text-ink-muted mb-2">Pick a username</label>
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-paper px-4 py-3">
+              <span className="text-ink-muted">@</span>
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/[^A-Za-z0-9_]/g, ""))}
+                placeholder="username"
+                maxLength={20}
+                className="flex-1 bg-transparent text-[17px] focus:outline-none"
+              />
+            </div>
+            <p className="mt-2 text-xs text-ink-muted">
+              3–20 letters, numbers, or underscores. Friends use this to add you to groups.
+            </p>
+
             <button
               onClick={() => setStep(2)}
-              disabled={!name.trim()}
+              disabled={!name.trim() || !usernameValid}
               className="mt-6 w-full rounded-xl bg-primary py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
             >
               Next
             </button>
           </>
         )}
+
 
         {step === 2 && (
           <>

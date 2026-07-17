@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 });
 
 function CalendarPage() {
+  const navigate = useNavigate();
   const feedFn = useServerFn(listMyFeed);
   const { data: feed = [] } = useQuery({ queryKey: ["feed"], queryFn: () => feedFn() });
 

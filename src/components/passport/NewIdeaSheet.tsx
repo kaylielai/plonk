@@ -64,7 +64,9 @@ export function NewIdeaSheet({ open, onClose, groups, onSubmit }: NewIdeaSheetPr
   return (
     <>
       <div className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-paper shadow-[0_-8px_40px_rgba(0,0,0,0.12)]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-md max-h-[85vh] overflow-hidden rounded-3xl bg-paper shadow-2xl flex flex-col">
+
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-border" />
         </div>

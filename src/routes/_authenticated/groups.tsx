@@ -9,7 +9,7 @@ import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername, re
 import { listGroupIdeas, createIdea } from "@/lib/ideas.functions";
 import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
 import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
-import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
+
 
 
 export const Route = createFileRoute("/_authenticated/groups")({

@@ -416,7 +416,9 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
             </>
           )}
         </div>
+        </div>
       </div>
     </>
+
   );
 }

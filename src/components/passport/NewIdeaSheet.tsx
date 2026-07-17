@@ -118,6 +118,23 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
           </div>
 
           <div className="mt-5">
+            <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+              Pick a date <span className="text-ink-muted/60 normal-case tracking-normal">(optional)</span>
+            </label>
+            <input
+              type="date"
+              value={targetDate}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="w-full rounded-xl border border-border bg-cream px-4 py-2.5 font-mono text-[12px]"
+            />
+            <p className="mt-1.5 font-mono text-[10px] text-ink-muted">
+              Adds it to the calendar once the plan is confirmed.
+            </p>
+          </div>
+
+
+          <div className="mt-5">
             <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Activity</label>
             <div className="flex flex-wrap gap-2">
               {FIXED_TAGS.map((t) => (

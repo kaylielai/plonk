@@ -29,6 +29,7 @@ function OnboardingPage() {
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [cover, setCover] = useState("navy");
   const [saving, setSaving] = useState(false);
 
@@ -38,18 +39,22 @@ function OnboardingPage() {
         navigate({ to: "/" });
       } else {
         setName(profile.display_name || "");
+        setUsername(profile.username || "");
         setCover(profile.passport_cover_color || "navy");
       }
     }
   }, [profile, navigate]);
 
+  const usernameValid = /^[A-Za-z0-9_]{3,20}$/.test(username);
+
   async function finish() {
-    if (!name.trim()) return;
+    if (!name.trim() || !usernameValid) return;
     setSaving(true);
     try {
       await updateProfile({
         data: {
           display_name: name.trim(),
+          username,
           passport_cover_color: cover,
           complete_onboarding: true,
         },

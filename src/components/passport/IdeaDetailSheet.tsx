@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy } from "lucide-react";
+import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken } from "@/lib/ideas.functions";
 import { createStampsFromPhoto } from "@/lib/stamps.functions";
+import { addHangoutToGoogleCalendar, isGoogleCalendarConnected } from "@/lib/googleCalendar.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { initials, pickColor } from "./IdeaCard";
 
@@ -24,6 +25,23 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   const confirmFn = useServerFn(confirmIdea);
   const liteFn = useServerFn(createLiteToken);
   const stampsFn = useServerFn(createStampsFromPhoto);
+  const addToGcalFn = useServerFn(addHangoutToGoogleCalendar);
+  const gcalStatusFn = useServerFn(isGoogleCalendarConnected);
+  const { data: gcalStatus } = useQuery({
+    queryKey: ["gcal-connected"],
+    queryFn: () => gcalStatusFn(),
+  });
+  const addToGcalMut = useMutation({
+    mutationFn: () => addToGcalFn({ data: { idea_id: ideaId! } }),
+    onSuccess: (res) => {
+      toast.success("Added to Google Calendar", {
+        action: res.htmlLink
+          ? { label: "Open", onClick: () => window.open(res.htmlLink!, "_blank") }
+          : undefined,
+      });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["idea", ideaId],

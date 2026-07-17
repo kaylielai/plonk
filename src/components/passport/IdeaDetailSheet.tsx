@@ -370,6 +370,20 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
                   >
                     <Camera className="h-4 w-4" /> Upload photo → stamp
                   </button>
+                  <button
+                    onClick={() => {
+                      if (!gcalStatus?.connected) {
+                        toast.error("Connect Google Calendar in Profile first.");
+                        return;
+                      }
+                      addToGcalMut.mutate();
+                    }}
+                    disabled={addToGcalMut.isPending}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-teal/40 bg-paper py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-teal disabled:opacity-50"
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    {addToGcalMut.isPending ? "Adding…" : "Add to Google Calendar"}
+                  </button>
                 </div>
               )}
 

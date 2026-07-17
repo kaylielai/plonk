@@ -25,10 +25,11 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   const liteFn = useServerFn(createLiteToken);
   const stampsFn = useServerFn(createStampsFromPhoto);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["idea", ideaId],
     queryFn: () => detailFn({ data: { idea_id: ideaId! } }),
     enabled: !!ideaId,
+    retry: false,
   });
 
   const [slots, setSlots] = useState<{ mornings: string[]; afternoons: string[]; evenings: string[] }>({

@@ -288,6 +288,47 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         </div>
       </header>
 
+      <div className="flex flex-col gap-5 px-5 pb-24">
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <span className="text-3xl">✦</span>
+            <p className="text-lg font-medium">No ideas yet</p>
+            <p className="text-sm text-ink-muted">Drop the first idea into this group.</p>
+          </div>
+        ) : (
+          groupedByDay.map(([day, list]) => (
+            <section key={day} className="flex flex-col gap-3">
+              <div className="text-center text-[11px] font-semibold tracking-[0.18em] text-ink-muted">
+                {day}
+              </div>
+              {list.map((idea) => (
+                <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedIdeaId(idea.id)} />
+              ))}
+            </section>
+          ))
+        )}
+      </div>
+
+      <button
+        onClick={() => setNewIdeaOpen(true)}
+        aria-label="Drop idea into group"
+        className="fixed bottom-24 left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)]"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
+      <NewIdeaSheet
+        open={newIdeaOpen}
+        onClose={() => setNewIdeaOpen(false)}
+        groups={data ? [{ id: data.group.id, name: data.group.name, cover_color: data.group.cover_color }] : []}
+        defaultGroupId={groupId}
+        onSubmit={handleDropIdea}
+      />
+
+      <IdeaDetailSheet ideaId={selectedIdeaId} onClose={() => setSelectedIdeaId(null)} />
+
+
+
       {sheet === "members" && (
         <SheetOverlay title={`Members · ${data?.members.length ?? 0}`} onClose={() => setSheet(null)}>
           <div className="flex flex-col gap-2">

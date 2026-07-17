@@ -20,6 +20,7 @@ interface NewIdeaSheetProps {
     timeframe_label: string;
     tag: string;
     group_id: string;
+    target_date: string | null;
   }) => Promise<void> | void;
 }
 

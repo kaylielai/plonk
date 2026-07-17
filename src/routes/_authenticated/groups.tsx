@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername, renameGroup } from "@/lib/groups.functions";
+import { listGroupIdeas, createIdea } from "@/lib/ideas.functions";
+import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
+import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
+import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
 
 
 export const Route = createFileRoute("/_authenticated/groups")({

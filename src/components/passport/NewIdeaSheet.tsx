@@ -182,7 +182,9 @@ export function NewIdeaSheet({ open, onClose, groups, onSubmit }: NewIdeaSheetPr
             {saving ? "…" : "Drop it ✦"}
           </button>
         </div>
+        </div>
       </div>
     </>
+
   );
 }

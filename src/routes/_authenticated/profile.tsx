@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { useState, useEffect, useMemo } from "react";
-import { LogOut, Check, ChevronDown, ShieldAlert } from "lucide-react";
+import { LogOut, Check, ChevronDown, ShieldAlert, Settings as SettingsIcon, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyProfile, updateMyProfile, deleteMyAccount } from "@/lib/profile.functions";
@@ -61,6 +61,8 @@ function ProfilePage() {
   }, [profile]);
 
   const usernameValid = !username || /^[A-Za-z0-9_]{3,20}$/.test(username);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
 
   async function save() {
     if (!usernameValid) {
@@ -106,9 +108,17 @@ function ProfilePage() {
 
   return (
     <AppShell>
-      <header className="px-5 pb-2 pt-8">
+      <header className="flex items-center justify-between px-5 pb-2 pt-8">
         <h1 className="text-[26px] font-semibold tracking-tight">Profile</h1>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Settings"
+          className="rounded-full p-2 text-ink-muted hover:bg-secondary hover:text-foreground transition"
+        >
+          <SettingsIcon className="h-5 w-5" />
+        </button>
       </header>
+
 
       <section className="mx-5 mt-4 rounded-3xl bg-paper p-5 ring-1 ring-border/40">
         <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Display name</label>
@@ -167,22 +177,47 @@ function ProfilePage() {
 
       <button
         onClick={save}
-        className="mx-5 mt-6 w-[calc(100%-2.5rem)] rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground"
+        className="mx-5 mt-6 mb-6 w-[calc(100%-2.5rem)] rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground"
       >
         Save changes
       </button>
 
-      <AdvancedSecurity onSignedOut={signOut} />
-
-      <button
-        onClick={signOut}
-        className="mx-5 mt-3 mb-4 flex w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-xl border border-destructive/40 py-3 text-sm text-destructive"
-      >
-        <LogOut className="h-4 w-4" /> Sign out
-      </button>
+      {settingsOpen && (
+        <SettingsSheet onClose={() => setSettingsOpen(false)} onSignedOut={signOut} />
+      )}
     </AppShell>
   );
 }
+
+function SettingsSheet({ onClose, onSignedOut }: { onClose: () => void; onSignedOut: () => Promise<void> }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background p-5 shadow-2xl"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-[18px] font-semibold">
+            <SettingsIcon className="h-4 w-4" /> Settings
+          </h2>
+          <button onClick={onClose} aria-label="Close" className="rounded-full p-2 hover:bg-secondary">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <AdvancedSecurity onSignedOut={onSignedOut} />
+
+        <button
+          onClick={onSignedOut}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/40 py-3 text-sm text-destructive"
+        >
+          <LogOut className="h-4 w-4" /> Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function AdvancedSecurity({ onSignedOut }: { onSignedOut: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
@@ -227,7 +262,7 @@ function AdvancedSecurity({ onSignedOut }: { onSignedOut: () => Promise<void> })
   }
 
   return (
-    <section className="mx-5 mt-5 rounded-3xl bg-paper ring-1 ring-border/40">
+    <section className="rounded-3xl bg-paper ring-1 ring-border/40">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"

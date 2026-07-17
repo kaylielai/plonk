@@ -302,7 +302,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
                 {day}
               </div>
               {list.map((idea) => (
-                <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedIdeaId(idea.id)} />
+                <IdeaCard key={idea.id} idea={idea} onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: idea.id } })} />
               ))}
             </section>
           ))

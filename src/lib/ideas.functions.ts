@@ -52,6 +52,7 @@ export const createIdea = createServerFn({ method: "POST" })
       tag: z.string().min(1).max(40),
       group_id: z.string().uuid().nullable().optional(),
       recipient_user_id: z.string().uuid().nullable().optional(),
+      target_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
     }).refine((d) => d.group_id || d.recipient_user_id, {
       message: "Must send to a group or a person",
     }).parse(d),
@@ -65,6 +66,7 @@ export const createIdea = createServerFn({ method: "POST" })
         tag: data.tag,
         group_id: data.group_id ?? null,
         recipient_user_id: data.recipient_user_id ?? null,
+        target_date: data.target_date ?? null,
         created_by: context.userId,
       })
       .select()
@@ -76,6 +78,7 @@ export const createIdea = createServerFn({ method: "POST" })
       .insert({ idea_id: idea.id, user_id: context.userId });
     return idea;
   });
+
 
 // ============ DETAIL ============
 export const getIdeaDetail = createServerFn({ method: "POST" })

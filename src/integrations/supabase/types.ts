@@ -206,6 +206,7 @@ export type Database = {
           suggested_day: string | null
           suggested_time: string | null
           tag: string
+          target_date: string | null
           timeframe_label: string
           title: string
           updated_at: string
@@ -222,6 +223,7 @@ export type Database = {
           suggested_day?: string | null
           suggested_time?: string | null
           tag: string
+          target_date?: string | null
           timeframe_label: string
           title: string
           updated_at?: string
@@ -238,6 +240,7 @@ export type Database = {
           suggested_day?: string | null
           suggested_time?: string | null
           tag?: string
+          target_date?: string | null
           timeframe_label?: string
           title?: string
           updated_at?: string

@@ -61,7 +61,14 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
         .filter((p) => p.user_id)
         .map((p) => p.user_id!) ?? [],
     );
+
+    // Prefill confirm date/time from target_date if set (default 6:00 PM local)
+    const td = (data.idea as { target_date?: string | null }).target_date;
+    if (td && !confirmDate) {
+      setConfirmDate(`${td}T18:00`);
+    }
   }, [data]);
+
 
   if (!ideaId) return null;
 

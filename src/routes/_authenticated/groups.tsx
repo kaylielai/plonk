@@ -180,7 +180,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     return Array.from(groups.entries());
   }, [ideas]);
 
-  async function handleDropIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string }) {
+  async function handleDropIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string; target_date: string | null }) {
     try {
       await createIdeaFn({ data: input });
       toast.success("Idea dropped");

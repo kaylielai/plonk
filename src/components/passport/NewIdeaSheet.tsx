@@ -20,6 +20,7 @@ interface NewIdeaSheetProps {
     timeframe_label: string;
     tag: string;
     group_id: string;
+    target_date: string | null;
   }) => Promise<void> | void;
 }
 
@@ -31,6 +32,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
   const [customTag, setCustomTag] = useState("");
   const [showCustomTag, setShowCustomTag] = useState(false);
   const [groupId, setGroupId] = useState(defaultGroupId ?? "");
+  const [targetDate, setTargetDate] = useState("");
   const [saving, setSaving] = useState(false);
 
   const effectiveTimeframe = timeframe === "custom" ? customTimeframe : timeframe;
@@ -46,6 +48,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
         timeframe_label: effectiveTimeframe.trim(),
         tag: effectiveTag,
         group_id: groupId,
+        target_date: targetDate || null,
       });
       setTitle("");
       setTimeframe("");
@@ -54,6 +57,7 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
       setCustomTag("");
       setShowCustomTag(false);
       setGroupId("");
+      setTargetDate("");
       onClose();
     } finally {
       setSaving(false);
@@ -112,6 +116,23 @@ export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }
               className="mt-2.5 w-full rounded-xl border border-border bg-cream px-4 py-2.5 font-mono text-[12px]"
             />
           </div>
+
+          <div className="mt-5">
+            <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+              Pick a date <span className="text-ink-muted/60 normal-case tracking-normal">(optional)</span>
+            </label>
+            <input
+              type="date"
+              value={targetDate}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="w-full rounded-xl border border-border bg-cream px-4 py-2.5 font-mono text-[12px]"
+            />
+            <p className="mt-1.5 font-mono text-[10px] text-ink-muted">
+              Adds it to the calendar once the plan is confirmed.
+            </p>
+          </div>
+
 
           <div className="mt-5">
             <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Activity</label>

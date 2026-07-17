@@ -137,7 +137,7 @@ function HomePage() {
           </div>
         )}
         {visible.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedId(idea.id)} />
+          <IdeaCard key={idea.id} idea={idea} onClick={() => navigate({ to: "/ideas/$ideaId", params: { ideaId: idea.id } })} />
         ))}
       </div>
 

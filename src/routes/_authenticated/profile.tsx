@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { useState, useEffect, useMemo } from "react";
-import { LogOut, Check, ChevronDown, ShieldAlert } from "lucide-react";
+import { LogOut, Check, ChevronDown, ShieldAlert, Settings as SettingsIcon, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyProfile, updateMyProfile, deleteMyAccount } from "@/lib/profile.functions";

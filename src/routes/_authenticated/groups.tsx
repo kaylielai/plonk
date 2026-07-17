@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
-import { Plus, ArrowLeft, Copy, Search, MoreVertical, UserPlus, Users, X } from "lucide-react";
+import { Plus, ArrowLeft, Copy, Search, MoreVertical, UserPlus, Users, X, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername } from "@/lib/groups.functions";
+import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername, renameGroup } from "@/lib/groups.functions";
+
 
 export const Route = createFileRoute("/_authenticated/groups")({
   head: () => ({ meta: [{ title: "Groups — plonk" }] }),

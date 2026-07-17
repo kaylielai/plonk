@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/passport/BottomNav";
 import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
 import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
-import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
+
 import { listMyFeed, createIdea } from "@/lib/ideas.functions";
 import { listMyGroups } from "@/lib/groups.functions";
 import { getMyProfile } from "@/lib/profile.functions";

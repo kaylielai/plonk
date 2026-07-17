@@ -105,3 +105,24 @@ export const addGroupMemberByUsername = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return rows?.[0] ?? null;
   });
+
+export const renameGroup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      group_id: z.string().uuid(),
+      name: z.string().trim().min(1).max(60),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
+      .from("groups")
+      .update({ name: data.name })
+      .eq("id", data.group_id)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Only the group creator can rename this group");
+    return row;
+  });
+

@@ -274,6 +274,29 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
           </button>
         </SheetOverlay>
       )}
+
+      {sheet === "rename" && (
+        <SheetOverlay title="Rename group" onClose={() => setSheet(null)}>
+          <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">Group name</label>
+          <input
+            autoFocus
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            maxLength={60}
+            placeholder="Group name"
+            className="w-full rounded-xl border border-border bg-cream px-3 py-2.5 text-sm focus:outline-none"
+            onKeyDown={(e) => { if (e.key === "Enter") submitRename(); }}
+          />
+          <p className="mt-2 text-[11px] text-ink-muted">Only the group creator can rename this group.</p>
+          <button
+            onClick={submitRename}
+            disabled={renaming || !newName.trim() || newName.trim() === data?.group.name}
+            className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+          >
+            {renaming ? "Saving…" : "Save name"}
+          </button>
+        </SheetOverlay>
+      )}
     </AppShell>
   );
 }

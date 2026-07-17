@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/passport/BottomNav";
 import { useState, useEffect, useMemo } from "react";
-import { LogOut, Check } from "lucide-react";
+import { LogOut, Check, ChevronDown, ShieldAlert } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMyProfile, updateMyProfile } from "@/lib/profile.functions";
+import { getMyProfile, updateMyProfile, deleteMyAccount } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — plonk" }] }),
   component: ProfilePage,
 });
+
 
 const COVERS = [
   { id: "navy", label: "Navy", hex: "#083D77" },

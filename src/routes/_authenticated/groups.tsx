@@ -160,6 +160,22 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     }
   }
 
+  async function submitRename() {
+    if (!newName.trim() || newName.trim() === data?.group.name) { setSheet(null); return; }
+    setRenaming(true);
+    try {
+      await renameFn({ data: { group_id: groupId, name: newName.trim() } });
+      toast.success("Group renamed");
+      setSheet(null);
+      qc.invalidateQueries({ queryKey: ["group", groupId] });
+      qc.invalidateQueries({ queryKey: ["groups"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setRenaming(false);
+    }
+  }
+
   return (
     <AppShell>
       <header className="flex items-center gap-3 px-5 pb-4 pt-8">

@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listMyGroups, createGroup, getGroupDetail, addGroupMemberByUsername, renameGroup } from "@/lib/groups.functions";
+import { listGroupIdeas, createIdea } from "@/lib/ideas.functions";
+import { IdeaCard, initials, pickColor, type DisplayIdea } from "@/components/passport/IdeaCard";
+import { NewIdeaSheet } from "@/components/passport/NewIdeaSheet";
+import { IdeaDetailSheet } from "@/components/passport/IdeaDetailSheet";
 
 
 export const Route = createFileRoute("/_authenticated/groups")({
@@ -123,10 +127,16 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const detailFn = useServerFn(getGroupDetail);
   const addByUsernameFn = useServerFn(addGroupMemberByUsername);
   const renameFn = useServerFn(renameGroup);
+  const ideasFn = useServerFn(listGroupIdeas);
+  const createIdeaFn = useServerFn(createIdea);
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["group", groupId],
     queryFn: () => detailFn({ data: { group_id: groupId } }),
+  });
+  const { data: ideas = [] } = useQuery({
+    queryKey: ["group-ideas", groupId],
+    queryFn: () => ideasFn({ data: { group_id: groupId } }),
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const [sheet, setSheet] = useState<null | "members" | "add" | "rename">(null);
@@ -134,6 +144,53 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [newIdeaOpen, setNewIdeaOpen] = useState(false);
+  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
+
+  const groupedByDay = useMemo(() => {
+    const groups = new Map<string, DisplayIdea[]>();
+    for (const i of ideas) {
+      const participants = i.idea_participants ?? [];
+      const responseCount = (i.availability_responses ?? []).length;
+      const dayLabel = (i.confirmed_time
+        ? new Date(i.confirmed_time).toLocaleDateString([], { weekday: "long" })
+        : i.suggested_day || i.timeframe_label || "Someday").toUpperCase();
+      const display: DisplayIdea = {
+        id: i.id,
+        title: i.title,
+        tag: i.tag,
+        timeframe: i.timeframe_label,
+        recipient: i.groups?.name ?? "",
+        status: i.status,
+        participantCount: Math.max(participants.length, 1),
+        respondedCount: responseCount,
+        suggestedLabel: i.suggested_day && i.suggested_time ? `${i.suggested_day} · ${i.suggested_time}` : undefined,
+        confirmedTime: i.confirmed_time
+          ? new Date(i.confirmed_time).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })
+          : undefined,
+        people: participants.map((p) => ({
+          initials: initials(p.profiles?.display_name || p.lite_display_name || "?"),
+          color: pickColor(p.user_id ?? p.id),
+          responded: false,
+        })),
+      };
+      if (!groups.has(dayLabel)) groups.set(dayLabel, []);
+      groups.get(dayLabel)!.push(display);
+    }
+    return Array.from(groups.entries());
+  }, [ideas]);
+
+  async function handleDropIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string }) {
+    try {
+      await createIdeaFn({ data: input });
+      toast.success("Idea dropped");
+      qc.invalidateQueries({ queryKey: ["group-ideas", groupId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  }
+
 
 
   async function copyInvite() {
@@ -230,6 +287,47 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
           )}
         </div>
       </header>
+
+      <div className="flex flex-col gap-5 px-5 pb-24">
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <span className="text-3xl">✦</span>
+            <p className="text-lg font-medium">No ideas yet</p>
+            <p className="text-sm text-ink-muted">Drop the first idea into this group.</p>
+          </div>
+        ) : (
+          groupedByDay.map(([day, list]) => (
+            <section key={day} className="flex flex-col gap-3">
+              <div className="text-center text-[11px] font-semibold tracking-[0.18em] text-ink-muted">
+                {day}
+              </div>
+              {list.map((idea) => (
+                <IdeaCard key={idea.id} idea={idea} onClick={() => setSelectedIdeaId(idea.id)} />
+              ))}
+            </section>
+          ))
+        )}
+      </div>
+
+      <button
+        onClick={() => setNewIdeaOpen(true)}
+        aria-label="Drop idea into group"
+        className="fixed bottom-24 left-1/2 z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)]"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
+      <NewIdeaSheet
+        open={newIdeaOpen}
+        onClose={() => setNewIdeaOpen(false)}
+        groups={data ? [{ id: data.group.id, name: data.group.name, cover_color: data.group.cover_color }] : []}
+        defaultGroupId={groupId}
+        onSubmit={handleDropIdea}
+      />
+
+      <IdeaDetailSheet ideaId={selectedIdeaId} onClose={() => setSelectedIdeaId(null)} />
+
+
 
       {sheet === "members" && (
         <SheetOverlay title={`Members · ${data?.members.length ?? 0}`} onClose={() => setSheet(null)}>

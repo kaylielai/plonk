@@ -14,6 +14,7 @@ interface NewIdeaSheetProps {
   open: boolean;
   onClose: () => void;
   groups: NewIdeaGroup[];
+  defaultGroupId?: string;
   onSubmit: (idea: {
     title: string;
     timeframe_label: string;
@@ -22,14 +23,14 @@ interface NewIdeaSheetProps {
   }) => Promise<void> | void;
 }
 
-export function NewIdeaSheet({ open, onClose, groups, onSubmit }: NewIdeaSheetProps) {
+export function NewIdeaSheet({ open, onClose, groups, defaultGroupId, onSubmit }: NewIdeaSheetProps) {
   const [title, setTitle] = useState("");
   const [timeframe, setTimeframe] = useState("");
   const [customTimeframe, setCustomTimeframe] = useState("");
   const [tag, setTag] = useState("");
   const [customTag, setCustomTag] = useState("");
   const [showCustomTag, setShowCustomTag] = useState(false);
-  const [groupId, setGroupId] = useState("");
+  const [groupId, setGroupId] = useState(defaultGroupId ?? "");
   const [saving, setSaving] = useState(false);
 
   const effectiveTimeframe = timeframe === "custom" ? customTimeframe : timeframe;

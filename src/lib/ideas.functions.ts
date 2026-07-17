@@ -22,6 +22,26 @@ export const listMyFeed = createServerFn({ method: "GET" })
     return ideas ?? [];
   });
 
+// ============ LIST BY GROUP ============
+export const listGroupIdeas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ group_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: ideas, error } = await context.supabase
+      .from("ideas")
+      .select(`
+        id, title, timeframe_label, tag, status, suggested_day, suggested_time,
+        confirmed_time, group_id, recipient_user_id, created_by, created_at,
+        groups(name, cover_color),
+        idea_participants(id, user_id, lite_display_name, profiles(display_name, avatar_url)),
+        availability_responses(id, submitted_via)
+      `)
+      .eq("group_id", data.group_id)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return ideas ?? [];
+  });
+
 // ============ CREATE ============
 export const createIdea = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

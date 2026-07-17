@@ -162,6 +162,24 @@ function AuthPage() {
         >
           {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
         </button>
+
+        <button
+          onClick={async () => {
+            if (!email) return toast.error("Enter your email above first.");
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin + "/reset-password",
+            });
+            if (error) return toast.error(error.message);
+            toast.success("Check your email for a reset link.");
+          }}
+          className="mt-2 w-full text-center text-xs text-ink-muted hover:text-foreground underline"
+        >
+          Forgot password?
+        </button>
+        <p className="mt-2 text-center text-[11px] text-ink-muted">
+          Forgot your username? Reset your password with the email on your account, sign in, then find your @username on the Profile tab.
+        </p>
+
       </div>
     </div>
   );

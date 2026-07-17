@@ -262,7 +262,7 @@ function AdvancedSecurity({ onSignedOut }: { onSignedOut: () => Promise<void> })
   }
 
   return (
-    <section className="mx-5 mt-5 rounded-3xl bg-paper ring-1 ring-border/40">
+    <section className="rounded-3xl bg-paper ring-1 ring-border/40">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"

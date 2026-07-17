@@ -177,22 +177,47 @@ function ProfilePage() {
 
       <button
         onClick={save}
-        className="mx-5 mt-6 w-[calc(100%-2.5rem)] rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground"
+        className="mx-5 mt-6 mb-6 w-[calc(100%-2.5rem)] rounded-xl bg-primary py-3 text-sm font-semibold uppercase tracking-[0.14em] text-primary-foreground"
       >
         Save changes
       </button>
 
-      <AdvancedSecurity onSignedOut={signOut} />
-
-      <button
-        onClick={signOut}
-        className="mx-5 mt-3 mb-4 flex w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-xl border border-destructive/40 py-3 text-sm text-destructive"
-      >
-        <LogOut className="h-4 w-4" /> Sign out
-      </button>
+      {settingsOpen && (
+        <SettingsSheet onClose={() => setSettingsOpen(false)} onSignedOut={signOut} />
+      )}
     </AppShell>
   );
 }
+
+function SettingsSheet({ onClose, onSignedOut }: { onClose: () => void; onSignedOut: () => Promise<void> }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background p-5 shadow-2xl"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-[18px] font-semibold">
+            <SettingsIcon className="h-4 w-4" /> Settings
+          </h2>
+          <button onClick={onClose} aria-label="Close" className="rounded-full p-2 hover:bg-secondary">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <AdvancedSecurity onSignedOut={onSignedOut} />
+
+        <button
+          onClick={onSignedOut}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/40 py-3 text-sm text-destructive"
+        >
+          <LogOut className="h-4 w-4" /> Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function AdvancedSecurity({ onSignedOut }: { onSignedOut: () => Promise<void> }) {
   const [open, setOpen] = useState(false);

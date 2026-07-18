@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon } from "lucide-react";
+import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon, Pencil, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken } from "@/lib/ideas.functions";
+import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken, updateIdea, deleteIdea } from "@/lib/ideas.functions";
 import { createStampsFromPhoto } from "@/lib/stamps.functions";
 import { addHangoutToGoogleCalendar, isGoogleCalendarConnected } from "@/lib/googleCalendar.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +63,13 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   const [caption, setCaption] = useState("");
   const [uploading, setUploading] = useState(false);
   const [liteToken, setLiteToken] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editTimeframe, setEditTimeframe] = useState("");
+  const [editTag, setEditTag] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const updateFn = useServerFn(updateIdea);
+  const deleteFn = useServerFn(deleteIdea);
 
   // Prefill my existing slots when data loads
   useEffect(() => {
@@ -131,6 +138,50 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
   });
+
+  const updateMut = useMutation({
+    mutationFn: () => updateFn({ data: {
+      idea_id: ideaId!,
+      title: editTitle,
+      timeframe_label: editTimeframe,
+      tag: editTag,
+      target_date: editDate ? editDate : null,
+    } }),
+    onSuccess: () => {
+      toast.success("Idea updated");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["group-ideas"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteFn({ data: { idea_id: ideaId! } }),
+    onSuccess: () => {
+      toast.success("Idea deleted");
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["group-ideas"] });
+      onClose();
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  function startEditing() {
+    if (!idea) return;
+    setEditTitle(idea.title);
+    setEditTimeframe(idea.timeframe_label);
+    setEditTag(idea.tag);
+    setEditDate((idea as { target_date?: string | null }).target_date ?? "");
+    setEditing(true);
+  }
+
+  function handleDelete() {
+    if (typeof window !== "undefined" && !window.confirm("Delete this idea? This can't be undone.")) return;
+    deleteMut.mutate();
+  }
 
   async function handleLite() {
     try {
@@ -213,8 +264,77 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
                   {idea.groups?.name ?? "1:1"}
                 </span>
               </div>
-              <h2 className="mt-3 text-[24px] font-semibold leading-tight">{idea.title}</h2>
-              <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe_label}</p>
+              {editing ? (
+                <div className="mt-3 rounded-2xl bg-cream p-4 ring-1 ring-border/50 space-y-2">
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Title"
+                    className="w-full rounded-lg border border-border bg-paper px-3 py-2 text-sm font-semibold"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      value={editTag}
+                      onChange={(e) => setEditTag(e.target.value)}
+                      placeholder="Tag"
+                      className="w-24 rounded-lg border border-border bg-paper px-3 py-2 text-sm font-mono uppercase"
+                    />
+                    <input
+                      value={editTimeframe}
+                      onChange={(e) => setEditTimeframe(e.target.value)}
+                      placeholder="Timeframe"
+                      className="flex-1 rounded-lg border border-border bg-paper px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-paper px-3 py-2 text-sm"
+                  />
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => setEditing(false)}
+                      className="flex-1 rounded-lg border border-border py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => updateMut.mutate()}
+                      disabled={!editTitle || !editTimeframe || !editTag || updateMut.isPending}
+                      className="flex-1 rounded-lg bg-primary py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+                    >
+                      {updateMut.isPending ? "…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-3 flex items-start justify-between gap-3">
+                    <h2 className="text-[24px] font-semibold leading-tight">{idea.title}</h2>
+                    {idea.created_by === myUserId && idea.status !== "completed" && (
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          onClick={startEditing}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-ink-muted hover:brightness-95"
+                          aria-label="Edit idea"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          disabled={deleteMut.isPending}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-magenta hover:brightness-95 disabled:opacity-50"
+                          aria-label="Delete idea"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe_label}</p>
+                </>
+              )}
 
               {/* Participants */}
               <div className="mt-6">

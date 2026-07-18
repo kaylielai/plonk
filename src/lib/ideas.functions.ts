@@ -79,6 +79,52 @@ export const createIdea = createServerFn({ method: "POST" })
     return idea;
   });
 
+// ============ UPDATE ============
+export const updateIdea = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      idea_id: z.string().uuid(),
+      title: z.string().min(1).max(120).optional(),
+      timeframe_label: z.string().min(1).max(60).optional(),
+      tag: z.string().min(1).max(40).optional(),
+      target_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const patch: {
+      title?: string;
+      timeframe_label?: string;
+      tag?: string;
+      target_date?: string | null;
+    } = {};
+    if (data.title !== undefined) patch.title = data.title;
+    if (data.timeframe_label !== undefined) patch.timeframe_label = data.timeframe_label;
+    if (data.tag !== undefined) patch.tag = data.tag;
+    if (data.target_date !== undefined) patch.target_date = data.target_date;
+    const { data: idea, error } = await context.supabase
+      .from("ideas")
+      .update(patch)
+      .eq("id", data.idea_id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return idea;
+  });
+
+// ============ DELETE ============
+export const deleteIdea = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ idea_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("ideas")
+      .delete()
+      .eq("id", data.idea_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 
 // ============ DETAIL ============
 export const getIdeaDetail = createServerFn({ method: "POST" })

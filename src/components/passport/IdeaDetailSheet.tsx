@@ -139,7 +139,49 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
     onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
   });
 
-  async function handleLite() {
+  const updateMut = useMutation({
+    mutationFn: () => updateFn({ data: {
+      idea_id: ideaId!,
+      title: editTitle,
+      timeframe_label: editTimeframe,
+      tag: editTag,
+      target_date: editDate ? editDate : null,
+    } }),
+    onSuccess: () => {
+      toast.success("Idea updated");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["group-ideas"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteFn({ data: { idea_id: ideaId! } }),
+    onSuccess: () => {
+      toast.success("Idea deleted");
+      qc.invalidateQueries({ queryKey: ["idea", ideaId] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["group-ideas"] });
+      onClose();
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+  });
+
+  function startEditing() {
+    if (!idea) return;
+    setEditTitle(idea.title);
+    setEditTimeframe(idea.timeframe_label);
+    setEditTag(idea.tag);
+    setEditDate((idea as { target_date?: string | null }).target_date ?? "");
+    setEditing(true);
+  }
+
+  function handleDelete() {
+    if (typeof window !== "undefined" && !window.confirm("Delete this idea? This can't be undone.")) return;
+    deleteMut.mutate();
+  }
     try {
       const { token } = await liteFn({ data: { idea_id: ideaId } });
       const url = `${window.location.origin}/i/${encodeURIComponent(token)}`;

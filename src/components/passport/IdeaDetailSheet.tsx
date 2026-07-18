@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon } from "lucide-react";
+import { X, Check, ArrowRight, Sunrise, Sun, Moon, Camera, Link as LinkIcon, Copy, Calendar as CalendarIcon, Pencil, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken } from "@/lib/ideas.functions";
+import { getIdeaDetail, submitAvailability, suggestTime, confirmIdea, createLiteToken, updateIdea, deleteIdea } from "@/lib/ideas.functions";
 import { createStampsFromPhoto } from "@/lib/stamps.functions";
 import { addHangoutToGoogleCalendar, isGoogleCalendarConnected } from "@/lib/googleCalendar.functions";
 import { supabase } from "@/integrations/supabase/client";

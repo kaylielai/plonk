@@ -63,6 +63,13 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
   const [caption, setCaption] = useState("");
   const [uploading, setUploading] = useState(false);
   const [liteToken, setLiteToken] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editTimeframe, setEditTimeframe] = useState("");
+  const [editTag, setEditTag] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const updateFn = useServerFn(updateIdea);
+  const deleteFn = useServerFn(deleteIdea);
 
   // Prefill my existing slots when data loads
   useEffect(() => {

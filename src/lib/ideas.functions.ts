@@ -92,7 +92,12 @@ export const updateIdea = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      title?: string;
+      timeframe_label?: string;
+      tag?: string;
+      target_date?: string | null;
+    } = {};
     if (data.title !== undefined) patch.title = data.title;
     if (data.timeframe_label !== undefined) patch.timeframe_label = data.timeframe_label;
     if (data.tag !== undefined) patch.tag = data.tag;

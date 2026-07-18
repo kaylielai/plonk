@@ -1,0 +1,1 @@
+CREATE POLICY "creator deletes ideas" ON public.ideas FOR DELETE USING (created_by = auth.uid());

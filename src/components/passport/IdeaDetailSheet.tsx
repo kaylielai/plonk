@@ -182,6 +182,8 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
     if (typeof window !== "undefined" && !window.confirm("Delete this idea? This can't be undone.")) return;
     deleteMut.mutate();
   }
+
+  async function handleLite() {
     try {
       const { token } = await liteFn({ data: { idea_id: ideaId } });
       const url = `${window.location.origin}/i/${encodeURIComponent(token)}`;

@@ -264,8 +264,77 @@ export function IdeaDetailSheet({ ideaId, onClose }: IdeaDetailSheetProps) {
                   {idea.groups?.name ?? "1:1"}
                 </span>
               </div>
-              <h2 className="mt-3 text-[24px] font-semibold leading-tight">{idea.title}</h2>
-              <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe_label}</p>
+              {editing ? (
+                <div className="mt-3 rounded-2xl bg-cream p-4 ring-1 ring-border/50 space-y-2">
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Title"
+                    className="w-full rounded-lg border border-border bg-paper px-3 py-2 text-sm font-semibold"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      value={editTag}
+                      onChange={(e) => setEditTag(e.target.value)}
+                      placeholder="Tag"
+                      className="w-24 rounded-lg border border-border bg-paper px-3 py-2 text-sm font-mono uppercase"
+                    />
+                    <input
+                      value={editTimeframe}
+                      onChange={(e) => setEditTimeframe(e.target.value)}
+                      placeholder="Timeframe"
+                      className="flex-1 rounded-lg border border-border bg-paper px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-paper px-3 py-2 text-sm"
+                  />
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => setEditing(false)}
+                      className="flex-1 rounded-lg border border-border py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => updateMut.mutate()}
+                      disabled={!editTitle || !editTimeframe || !editTag || updateMut.isPending}
+                      className="flex-1 rounded-lg bg-primary py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground disabled:opacity-50"
+                    >
+                      {updateMut.isPending ? "…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-3 flex items-start justify-between gap-3">
+                    <h2 className="text-[24px] font-semibold leading-tight">{idea.title}</h2>
+                    {idea.created_by === myUserId && idea.status !== "completed" && (
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          onClick={startEditing}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-ink-muted hover:brightness-95"
+                          aria-label="Edit idea"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          disabled={deleteMut.isPending}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-magenta hover:brightness-95 disabled:opacity-50"
+                          aria-label="Delete idea"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1 font-mono text-sm text-ink-muted">{idea.timeframe_label}</p>
+                </>
+              )}
 
               {/* Participants */}
               <div className="mt-6">

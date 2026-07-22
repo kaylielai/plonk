@@ -154,16 +154,40 @@ function HomePage() {
 // Map DB idea to display shape
 type FeedIdea = Awaited<ReturnType<typeof listMyFeed>>[number];
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
+export function computeAvailableBands(
+  responses: Array<{ slots?: { mornings?: string[]; afternoons?: string[]; evenings?: string[] } | null } | undefined>,
+  targetDate: string | null | undefined,
+): Array<"mornings" | "afternoons" | "evenings"> {
+  if (!targetDate) return [];
+  const slotsList = responses
+    .map((r) => r?.slots ?? null)
+    .filter(Boolean) as Array<{ mornings?: string[]; afternoons?: string[]; evenings?: string[] }>;
+  if (slotsList.length === 0) return [];
+  const wd = WEEKDAYS[new Date(`${targetDate}T12:00:00Z`).getUTCDay()];
+  const bands: Array<"mornings" | "afternoons" | "evenings"> = [];
+  for (const b of ["mornings", "afternoons", "evenings"] as const) {
+    if (slotsList.every((s) => (s[b] ?? []).includes(wd))) bands.push(b);
+  }
+  return bands;
+}
+
 function toDisplay(i: FeedIdea): DisplayIdea {
   const participants = i.idea_participants ?? [];
-  const responseCount = (i.availability_responses ?? []).length;
+  const responses = (i.availability_responses ?? []) as Array<{
+    id: string;
+    participant_id: string;
+    slots?: { mornings?: string[]; afternoons?: string[]; evenings?: string[] } | null;
+  }>;
+  const respondedIds = new Set(responses.map((r) => r.participant_id));
   const recipient = i.groups?.name ?? "1:1";
   const people = participants.map((p) => {
     const name = p.profiles?.display_name || p.lite_display_name || "?";
     const id = p.user_id ?? p.id;
-    const responded = (i.availability_responses ?? []).some((r) => r.id); // simplified
-    return { initials: initials(name), color: pickColor(id), responded };
+    return { initials: initials(name), color: pickColor(id), responded: respondedIds.has(p.id) };
   });
+  const targetDate = (i as { target_date?: string | null }).target_date ?? undefined;
   return {
     id: i.id,
     title: i.title,
@@ -172,9 +196,12 @@ function toDisplay(i: FeedIdea): DisplayIdea {
     recipient,
     status: i.status,
     participantCount: Math.max(participants.length, 1),
-    respondedCount: responseCount,
+    respondedCount: respondedIds.size,
     suggestedLabel: i.suggested_day && i.suggested_time ? `${i.suggested_day} · ${i.suggested_time}` : undefined,
     confirmedTime: i.confirmed_time ? new Date(i.confirmed_time).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) : undefined,
+    targetDate: targetDate ?? undefined,
+    availableBands: computeAvailableBands(responses, targetDate),
     people,
   };
 }
+

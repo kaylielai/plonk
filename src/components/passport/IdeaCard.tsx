@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sunrise, Sun, Moon } from "lucide-react";
 
 /**
  * Display-model for an idea card — normalized from DB queries.
@@ -14,8 +14,13 @@ export interface DisplayIdea {
   respondedCount: number;
   suggestedLabel?: string;
   confirmedTime?: string;
+  /** ISO date YYYY-MM-DD of the planned day, if set */
+  targetDate?: string;
+  /** Time bands (morning/afternoon/evening) with unanimous overlap on the target date */
+  availableBands?: Array<"mornings" | "afternoons" | "evenings">;
   people: { initials: string; color: string; responded: boolean }[];
 }
+
 
 const AVATAR_COLORS = [
   "bg-teal-soft text-teal",

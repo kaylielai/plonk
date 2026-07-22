@@ -200,8 +200,80 @@ export const submitAvailability = createServerFn({ method: "POST" })
         { onConflict: "participant_id" },
       );
     if (upErr) throw new Error(upErr.message);
+
+    // ---- Auto-confirm when boarding hits 100% ----
+    try {
+      const { data: idea } = await context.supabase
+        .from("ideas")
+        .select("id, status, target_date")
+        .eq("id", data.idea_id)
+        .maybeSingle();
+      if (idea && idea.status !== "confirmed" && idea.status !== "completed" && idea.target_date) {
+        const { data: parts } = await context.supabase
+          .from("idea_participants")
+          .select("id, availability_responses(slots)")
+          .eq("idea_id", data.idea_id);
+        const total = parts?.length ?? 0;
+        const responses = (parts ?? [])
+          .map((p) => {
+            const ar = p.availability_responses as unknown;
+            const r = Array.isArray(ar) ? ar[0] : ar;
+            return (r as { slots?: { mornings?: string[]; afternoons?: string[]; evenings?: string[] } } | null)?.slots ?? null;
+          })
+          .filter(Boolean) as Array<{ mornings?: string[]; afternoons?: string[]; evenings?: string[] }>;
+
+        if (total > 0 && responses.length === total) {
+          // Weekday abbrev matching DAYS convention (Mon..Sun)
+          const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+          const wd = DAYS[new Date(`${idea.target_date}T12:00:00Z`).getUTCDay()];
+          const bandNames = ["evenings", "afternoons", "mornings"] as const; // priority order
+          const bandHours: Record<(typeof bandNames)[number], number> = {
+            mornings: 10,
+            afternoons: 14,
+            evenings: 19,
+          };
+          let chosen: (typeof bandNames)[number] | null = null;
+          let bestCount = -1;
+          for (const b of bandNames) {
+            const count = responses.filter((r) => (r[b] ?? []).includes(wd)).length;
+            if (count > bestCount) {
+              bestCount = count;
+              chosen = b;
+            }
+          }
+          if (chosen && bestCount > 0) {
+            const hh = String(bandHours[chosen]).padStart(2, "0");
+            const confirmedIso = `${idea.target_date}T${hh}:00:00.000Z`;
+            const { data: hangout } = await context.supabase
+              .from("hangouts")
+              .insert({
+                idea_id: data.idea_id,
+                confirmed_time: confirmedIso,
+                confirmed_by: context.userId,
+              })
+              .select()
+              .single();
+            if (hangout) {
+              await context.supabase
+                .from("ideas")
+                .update({
+                  status: "confirmed",
+                  confirmed_time: confirmedIso,
+                  confirmed_by: context.userId,
+                })
+                .eq("id", data.idea_id);
+              return { ok: true, auto_confirmed: true, confirmed_time: confirmedIso };
+            }
+          }
+        }
+      }
+    } catch {
+      // non-fatal — availability was saved
+    }
+
     return { ok: true };
   });
+
 
 // ============ SUGGEST TIME ============
 export const suggestTime = createServerFn({ method: "POST" })

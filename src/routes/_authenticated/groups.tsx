@@ -148,10 +148,29 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const navigate = useNavigate();
 
   const groupedByDay = useMemo(() => {
+    const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
     const groups = new Map<string, DisplayIdea[]>();
     for (const i of ideas) {
       const participants = i.idea_participants ?? [];
-      const responseCount = (i.availability_responses ?? []).length;
+      const responses = ((i.availability_responses ?? []) as Array<{
+        id: string;
+        participant_id: string;
+        slots?: { mornings?: string[]; afternoons?: string[]; evenings?: string[] } | null;
+      }>);
+      const respondedIds = new Set(responses.map((r) => r.participant_id));
+      const targetDate = (i as { target_date?: string | null }).target_date ?? undefined;
+      const availableBands: Array<"mornings" | "afternoons" | "evenings"> = [];
+      if (targetDate) {
+        const slotsList = responses.map((r) => r.slots).filter(Boolean) as Array<{
+          mornings?: string[]; afternoons?: string[]; evenings?: string[];
+        }>;
+        if (slotsList.length > 0) {
+          const wd = WEEKDAYS[new Date(`${targetDate}T12:00:00Z`).getUTCDay()];
+          for (const b of ["mornings", "afternoons", "evenings"] as const) {
+            if (slotsList.every((s) => (s[b] ?? []).includes(wd))) availableBands.push(b);
+          }
+        }
+      }
       const dayLabel = (i.confirmed_time
         ? new Date(i.confirmed_time).toLocaleDateString([], { weekday: "long" })
         : i.suggested_day || i.timeframe_label || "Someday").toUpperCase();
@@ -163,15 +182,17 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         recipient: i.groups?.name ?? "",
         status: i.status,
         participantCount: Math.max(participants.length, 1),
-        respondedCount: responseCount,
+        respondedCount: respondedIds.size,
         suggestedLabel: i.suggested_day && i.suggested_time ? `${i.suggested_day} · ${i.suggested_time}` : undefined,
         confirmedTime: i.confirmed_time
           ? new Date(i.confirmed_time).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })
           : undefined,
+        targetDate,
+        availableBands,
         people: participants.map((p) => ({
           initials: initials(p.profiles?.display_name || p.lite_display_name || "?"),
           color: pickColor(p.user_id ?? p.id),
-          responded: false,
+          responded: respondedIds.has(p.id),
         })),
       };
       if (!groups.has(dayLabel)) groups.set(dayLabel, []);
@@ -179,6 +200,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     }
     return Array.from(groups.entries());
   }, [ideas]);
+
 
   async function handleDropIdea(input: { title: string; timeframe_label: string; tag: string; group_id: string; target_date: string | null }) {
     try {

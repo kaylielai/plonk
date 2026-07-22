@@ -132,6 +132,11 @@ function AvatarStack({ people, max = 4 }: { people: DisplayIdea["people"]; max?:
 function CollectingTicket({ idea, onClick }: { idea: DisplayIdea; onClick?: () => void }) {
   const pct = idea.participantCount === 0 ? 0 : Math.round((idea.respondedCount / idea.participantCount) * 100);
   const high = pct >= 60;
+  const dateLabel = idea.targetDate
+    ? new Date(`${idea.targetDate}T12:00:00Z`).toLocaleDateString([], {
+        weekday: "short", month: "short", day: "numeric", timeZone: "UTC",
+      })
+    : idea.timeframe;
   return (
     <Ticket
       accent={high ? "bg-magenta" : "bg-teal"}
@@ -153,15 +158,38 @@ function CollectingTicket({ idea, onClick }: { idea: DisplayIdea; onClick?: () =
       </div>
       <h3 className="text-[18px] font-semibold leading-tight text-foreground">{idea.title}</h3>
       <div className="mt-3 flex items-end justify-between gap-3">
-        <Meta label="When" value={idea.timeframe} />
+        <Meta label="When" value={dateLabel} />
         <AvatarStack people={idea.people} />
       </div>
+      {idea.targetDate && idea.availableBands && idea.availableBands.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-muted">Open</span>
+          {idea.availableBands.map((b) => (
+            <BandChip key={b} band={b} />
+          ))}
+        </div>
+      )}
       <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-tan-soft">
         <div className={`h-full rounded-full ${high ? "bg-magenta" : "bg-teal/60"}`} style={{ width: `${pct}%` }} />
       </div>
     </Ticket>
   );
 }
+
+function BandChip({ band }: { band: "mornings" | "afternoons" | "evenings" }) {
+  const meta = {
+    mornings: { icon: <Sunrise className="h-3 w-3" />, label: "morning", cls: "bg-gold-soft text-gold" },
+    afternoons: { icon: <Sun className="h-3 w-3" />, label: "afternoon", cls: "bg-coral-soft text-coral" },
+    evenings: { icon: <Moon className="h-3 w-3" />, label: "evening", cls: "bg-teal-soft text-teal" },
+  }[band];
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] ${meta.cls}`}>
+      {meta.icon}
+      {meta.label}
+    </span>
+  );
+}
+
 
 function SuggestedTicket({ idea, onClick }: { idea: DisplayIdea; onClick?: () => void }) {
   return (
